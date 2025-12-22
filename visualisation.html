@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Parcours photographique – Aubervilliers</title>
+
+  <!-- Leaflet (carte) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+    }
+
+    #sidebar {
+      width: 35%;
+      overflow-y: auto;
+      padding: 20px;
+      background: #f7f7f7;
+      border-right: 2px solid #ddd;
+    }
+
+    #map {
+      width: 65%;
+      height: 100%;
+    }
+
+    .spot {
+      background: white;
+      border: 2px solid #ccc;
+      border-left: 10px solid;
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .spot img {
+      width: 100%;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+
+    .title {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .meta {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .sentiment {
+      font-style: italic;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- PANNEAU GAUCHE -->
+  <div id="sidebar">
+    <h2>Parcours photographique – Aubervilliers</h2>
+    <p>Balade urbaine – visualisation données + ressentis</p>
+
+    <div id="spots"></div>
+  </div>
+
+  <!-- CARTE -->
+  <div id="map"></div>
+
+  <script>
+    // DONNÉES DES SPOTS
+    const spots = [
+      {
+        nom: "Humathèque",
+        lat: 48.9129,
+        lon: 2.3658,
+        photo: "image0 (1).jpeg",
+        couleur: "#4A90E2",
+        sentiment: "Calme, institutionnel, savoir",
+        description: "Architecture moderne dédiée à la recherche et aux sciences humaines."
+      },
+      {
+        nom: "MSH Paris Nord",
+        lat: 48.9135,
+        lon: 2.3667,
+        photo: "IMG_6981.jpg",
+        couleur: "#50E3C2",
+        sentiment: "Ouvert, académique",
+        description: "Lieu de travail et d’échange universitaire."
+      },
+      {
+        nom: "Place du Front Populaire",
+        lat: 48.9149,
+        lon: 2.3695,
+        photo: "IMG_7834.JPG",
+        couleur: "#F5A623",
+        sentiment: "Transit, mouvement, passage",
+        description: "Espace urbain animé, circulation et contrastes architecturaux."
+      },
+      {
+        nom: "Terre Terre – ferme urbaine",
+        lat: 48.9172,
+        lon: 2.3728,
+        photo: "IMG_7835.JPG",
+        couleur: "#7ED321",
+        sentiment: "Apaisant, nature, respiration",
+        description: "Ferme urbaine intégrée au tissu de la ville."
+      },
+      {
+        nom: "CIFA Fashion Business Center",
+        lat: 48.9181,
+        lon: 2.3733,
+        photo: "IMG_7836.JPG",
+        couleur: "#BD10E0",
+        sentiment: "Créatif, commercial",
+        description: "Pôle de la mode et du commerce."
+      },
+      {
+        nom: "Studio 217 – Star Academy",
+        lat: 48.9192,
+        lon: 2.3751,
+        photo: "IMG_7839.JPG",
+        couleur: "#D0021B",
+        sentiment: "Spectacle, média, énergie",
+        description: "Lieu emblématique de production audiovisuelle."
+      },
+      {
+        nom: "Forêt urbaine",
+        lat: 48.9157,
+        lon: 2.3684,
+        photo: "IMG_7840(2).JPG",
+        couleur: "#417505",
+        sentiment: "Nature, pause, fraîcheur",
+        description: "Espace vert au cœur du quartier."
+      },
+      {
+        nom: "Vieux quartier d’Aubervilliers",
+        lat: 48.9121,
+        lon: 2.3821,
+        photo: "IMG_7841.JPG",
+        couleur: "#8B572A",
+        sentiment: "Historique, quotidien, mémoire",
+        description: "Habitat ancien, vie locale, traces du passé."
+      }
+    ];
+
+    // CRÉATION DE LA CARTE
+    const map = L.map("map").setView([48.914, 2.37], 14);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    const latlngs = [];
+    const container = document.getElementById("spots");
+
+    spots.forEach(spot => {
+      latlngs.push([spot.lat, spot.lon]);
+
+      // MARQUEUR
+      L.circleMarker([spot.lat, spot.lon], {
+        radius: 8,
+        color: spot.couleur,
+        fillColor: spot.couleur,
+        fillOpacity: 0.8
+      })
+        .addTo(map)
+        .bindPopup(`<b>${spot.nom}</b><br>${spot.sentiment}`);
+
+      // CARTE TEXTE
+      const div = document.createElement("div");
+      div.className = "spot";
+      div.style.borderLeftColor = spot.couleur;
+
+      div.innerHTML = `
+        <div class="title">${spot.nom}</div>
+        <div class="meta">Lat: ${spot.lat} | Lon: ${spot.lon}</div>
+        <div class="sentiment">Sentiment : ${spot.sentiment}</div>
+        <p>${spot.description}</p>
+        <img src="${spot.photo}" alt="${spot.nom}">
+      `;
+
+      container.appendChild(div);
+    });
+
+    // TRAÇAGE DU PARCOURS
+    L.polyline(latlngs, {
+      color: "#000",
+      weight: 3,
+      dashArray: "5,5"
+    }).addTo(map);
+  </script>
+
+</body>
+</html>
