@@ -2,72 +2,555 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Parcours photographique – Aubervilliers</title>
+  <title>Croquis – Parcours photographique d'Aubervilliers (Fatima)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Leaflet CSS & JS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
 
   <style>
+    :root {
+      --bg: #f5f1ea;
+      --accent: #2b6cb0;
+      --accent-soft: #c3d8f4;
+      --text-main: #1f2933;
+      --text-soft: #6b7280;
+      --card-bg: #ffffff;
+      --border: #e0ded8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f1ea;
-      margin: 0;
-      padding: 1rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 2rem 1rem 4rem;
     }
-    h1 {
-      text-align: center;
+
+    .page { max-width: 1100px; margin: 0 auto; }
+
+    h1 { text-align: center; font-size: 2rem; margin-bottom: .25rem; }
+    h2 { text-align: center; font-size: 1.15rem; font-weight: 500; color: var(--text-soft); margin-bottom: 2rem; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+      gap: 2.5rem;
     }
-    #map {
-      height: 400px;
-      margin: 2rem 0;
-      border-radius: 12px;
+
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+    .timeline { position: relative; padding-left: 2.5rem; }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 1.1rem;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, var(--accent), var(--accent-soft));
+      border-radius: 999px;
     }
-    .card {
-      background: white;
-      padding: 1rem;
-      border-radius: 10px;
-      margin-bottom: 1rem;
+
+    .step { position: relative; margin-bottom: 1.75rem; }
+    .step:last-child { margin-bottom: 0; }
+
+    .step-marker {
+      position: absolute;
+      left: -0.1rem;
+      top: .4rem;
+      width: 1.4rem;
+      height: 1.4rem;
+      border-radius: 999px;
+      border: 3px solid var(--accent);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--accent);
     }
-    img {
+
+    .step-header {
+      font-size: .9rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--text-soft);
+      margin-bottom: .15rem;
+    }
+
+    .step-title { font-weight: 600; margin-bottom: .3rem; }
+
+    .photo-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: .9rem;
+      margin-top: .4rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.07);
+      display: grid;
+      grid-template-columns: minmax(0, 170px) minmax(0, 1fr);
+      gap: .75rem;
+    }
+
+    @media (max-width: 650px) { .photo-card { grid-template-columns: 1fr; } }
+
+    .photo-card img {
       width: 100%;
-      border-radius: 8px;
-      margin-top: .5rem;
+      display: block;
+      border-radius: 10px;
+      object-fit: cover;
+      max-height: 190px;
     }
+
+    .photo-meta { font-size: .82rem; }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem 1rem;
+      margin-bottom: .35rem;
+      font-size: .78rem;
+      color: var(--text-soft);
+    }
+
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+      padding: .1rem .55rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: .75rem;
+      font-weight: 500;
+    }
+
+    .meta-label { font-weight: 600; font-size: .8rem; margin-top: .35rem; }
+    ul.meta-list { margin: .1rem 0 .25rem 1rem; font-size: .82rem; }
+
+    .side-panel { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 1rem 1.1rem;
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+      font-size: .9rem;
+    }
+
+    .card h3 { font-size: 1rem; margin-bottom: .5rem; }
+
+    .exif-row { display: flex; align-items: center; gap: .4rem; font-size: .85rem; margin-bottom: .25rem; }
+    .icon { width: 1.1rem; text-align: center; }
+
+    .chart-bar { display: flex; gap: .35rem; margin-top: .4rem; align-items: flex-end; height: 80px; }
+    .bar { flex: 1; border-radius: 999px 999px 4px 4px; background: var(--accent-soft); position: relative; overflow: hidden; }
+    .bar::after { content: ""; position: absolute; inset: auto 0 0 0; height: 65%; background: var(--accent); }
+    .bar:nth-child(2)::after { height: 45%; }
+    .bar:nth-child(3)::after { height: 35%; }
+
+    .bar-labels { display: flex; justify-content: space-between; font-size: .75rem; margin-top: .3rem; color: var(--text-soft); }
+
+    footer { margin-top: 2.5rem; text-align: center; font-size: .78rem; color: var(--text-soft); }
   </style>
 </head>
 
 <body>
+  <main class="page">
+    <header>
+      <h1>Croquis final – Parcours photographique d'Aubervilliers</h1>
+      <h2>Balade (départ 11h) – Visualisation interactive &amp; infos des photos</h2>
+    </header>
 
-<h1>Parcours photographique – Aubervilliers</h1>
+    <!-- CARTE LEAFLET -->
+    <section style="margin-bottom: 2rem;">
+      <h2 style="text-align:left; font-size:1rem; margin-bottom:0.5rem;">
+        Carte du parcours et position des photos
+      </h2>
+      <div id="map" style="width:100%; height:350px; border-radius:16px; overflow:hidden; border:1px solid #e0ded8;"></div>
+      <p style="font-size:0.8rem; color:#6b7280; margin-top:0.35rem;">
+        Clique sur un marqueur pour voir la photo + résumé (coordonnées, heure, dimensions, sentiment, description).
+      </p>
+    </section>
 
-<div id="map"></div>
+    <section class="layout">
+      <!-- TIMELINE -->
+      <section class="timeline" aria-label="Parcours à pied">
 
-<div class="card">
-  <h3>Humathèque</h3>
-  <p>Sentiment : calme, institutionnel, savoir</p>
-  <img src="https://github.com/user-attachments/assets/7595d19d-58f8-48e4-8808-72bba64f6983">
-</div>
+        <!-- A -->
+        <article class="step">
+          <div class="step-marker">A</div>
+          <div class="step-header">11:00 – DÉPART</div>
+          <div class="step-title">Humathèque</div>
 
-<div class="card">
-  <h3>Supermarché</h3>
-  <p>Sentiment : quotidien, proximité</p>
-  <img src="https://github.com/user-attachments/assets/5eea573c-9225-492d-a593-8d9480802caa">
-</div>
+          <div class="photo-card">
+            <img src="image0 (1).jpeg" alt="Humathèque">
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">📍 48.9129, 2.3658</span>
+                <span class="meta-pill">⬆ Alt. N/A</span>
+                <span class="meta-pill">🕒 11:00</span>
+                <span class="meta-pill">📐 1152×2048 px</span>
+              </div>
 
-<script>
-  const map = L.map("map").setView([48.9129, 2.3658], 14);
+              <p class="meta-label">Couleurs &amp; matière</p>
+              <ul class="meta-list"><li>Blanc/gris, façades modernes, lignes nettes.</li></ul>
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap"
-  }).addTo(map);
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Calme, institutionnel, savoir.</li></ul>
 
-  L.marker([48.9129, 2.3658]).addTo(map)
-    .bindPopup("Humathèque");
+              <p class="meta-label">Description</p>
+              <ul class="meta-list"><li>Bâtiment dédié aux sciences humaines : atmosphère studieuse et espace structuré.</li></ul>
+            </div>
+          </div>
+        </article>
 
-  L.marker([48.9131, 2.3662]).addTo(map)
-    .bindPopup("Supermarché");
-</script>
+        <!-- B -->
+        <article class="step">
+          <div class="step-marker">B</div>
+          <div class="step-header">11:10</div>
+          <div class="step-title">Supermarché proche de l’Humathèque</div>
 
+          <div class="photo-card">
+            <img src="IMG_7841.JPG" alt="Supermarché proche de l’Humathèque">
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">📍 48.9131, 2.3662</span>
+                <span class="meta-pill">⬆ Alt. N/A</span>
+                <span class="meta-pill">🕒 11:10</span>
+                <span class="meta-pill">📐 1152×2048 px</span>
+              </div>
+
+              <p class="meta-label">Couleurs &amp; matière</p>
+              <ul class="meta-list"><li>Couleurs chaudes (stores), immeubles d’habitation.</li></ul>
+
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Quotidien, proximité.</li></ul>
+
+              <p class="meta-label">Description</p>
+              <ul class="meta-list"><li>Commerce de quartier : lieu de passage entre habitants, étudiants et trajets du quotidien.</li></ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- C -->
+        <article class="step">
+          <div class="step-marker">C</div>
+          <div class="step-header">11:20</div>
+          <div class="step-title">Passage piéton devant le collège</div>
+
+          <div class="photo-card">
+            <img src="IMG_7840(2).JPG" alt="Passage piéton devant le collège">
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">📍 48.9134, 2.3668</span>
+                <span class="meta-pill">⬆ Alt. N/A</span>
+                <span class="meta-pill">🕒 11:20</span>
+                <span class="meta-pill">📐 1152×2048 px</span>
+              </div>
+
+              <p class="meta-label">Couleurs &amp; matière</p>
+              <ul class="meta-list"><li>Gris urbain, marquage au sol, véhicules.</li></ul>
+
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Circulation, vigilance.</li></ul>
+
+              <p class="meta-label">Description</p>
+              <ul class="meta-list"><li>Traversée structurante : flux piétons/voitures, espace d’attention et de mouvement.</li></ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- D -->
+        <article class="step">
+          <div class="step-marker">D</div>
+          <div class="step-header">11:35</div>
+          <div class="step-title">Métro ligne 12 – Station Front Populaire</div>
+
+          <div class="photo-card">
+            <img src="IMG_7839.JPG" alt="Métro ligne 12 – Station Front Populaire">
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">📍 48.9149, 2.3695</span>
+                <span class="meta-pill">⬆ Alt. N/A</span>
+                <span class="meta-pill">🕒 11:35</span>
+                <span class="meta-pill">📐 1152×2048 px</span>
+              </div>
+
+              <p class="meta-label">Couleurs &amp; lumière</p>
+              <ul class="meta-list"><li>Lumière forte, feuillage au sol, verre/acier.</li></ul>
+
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Mobilité, transition.</li></ul>
+
+              <p class="meta-label">Description</p>
+              <ul class="meta-list"><li>Point de connexion : métro et déplacements, lieu de passage rapide et d’orientation.</li></ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- E -->
+        <article class="step">
+          <div class="step-marker">E</div>
+          <div class="step-header">11:50</div>
+          <div class="step-title">Studio 217 – Star Academy</div>
+
+          <div class="photo-card">
+            <img src="IMG_7836.JPG" alt="Studio 217 – Star Academy">
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">📍 48.9192, 2.3751</span>
+                <span class="meta-pill">⬆ Alt. N/A</span>
+                <span class="meta-pill">🕒 11:50</span>
+                <span class="meta-pill">📐 1152×2048 px</span>
+              </div>
+
+              <p class="meta-label">Couleurs &amp; signe</p>
+              <ul class="meta-list"><li>Enseigne, graphisme, entrée de studio.</li></ul>
+
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Spectacle, média, énergie.</li></ul>
+
+              <p class="meta-label">Description</p>
+              <ul class="meta-list"><li>Lieu de production audiovisuelle : image médiatique dans un tissu urbain mixte.</li></ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- F -->
+        <article class="step">
+          <div class="step-marker">F</div>
+          <div class="step-header">12:05</div>
+          <div class="step-title">Jardin / espace vert</div>
+
+          <div class="photo-card">
+            <img src="IMG_7835.JPG" alt="Jardin / espace vert">
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">📍 48.9172, 2.3728</span>
+                <span class="meta-pill">⬆ Alt. N/A</span>
+                <span class="meta-pill">🕒 12:05</span>
+                <span class="meta-pill">📐 1152×2048 px</span>
+              </div>
+
+              <p class="meta-label">Couleurs &amp; nature</p>
+              <ul class="meta-list"><li>Vert, feuilles d’automne, espace de pause.</li></ul>
+
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Apaisant, respiration.</li></ul>
+
+              <p class="meta-label">Description</p>
+              <ul class="meta-list"><li>Moment de calme au milieu de la ville : végétation et mobilier, rupture avec la circulation.</li></ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- G -->
+        <article class="step">
+          <div class="step-marker">G</div>
+          <div class="step-header">12:25</div>
+          <div class="step-title">Quartier ancien d’Aubervilliers</div>
+
+          <div class="photo-card">
+            <img src="IMG_6981.jpg" alt="Quartier ancien d’Aubervilliers">
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">📍 48.9121, 2.3821</span>
+                <span class="meta-pill">⬆ Alt. N/A</span>
+                <span class="meta-pill">🕒 12:25</span>
+                <span class="meta-pill">📐 1536×2048 px</span>
+              </div>
+
+              <p class="meta-label">Couleurs &amp; matière</p>
+              <ul class="meta-list"><li>Façades anciennes, textures, rue étroite.</li></ul>
+
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Historique, mémoire, contraste.</li></ul>
+
+              <p class="meta-label">Description</p>
+              <ul class="meta-list"><li>Ambiance plus “ancienne” : traces du passé, bâti irrégulier et vie de rue.</li></ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- H -->
+        <article class="step">
+          <div class="step-marker">H</div>
+          <div class="step-header">12:40 – FIN</div>
+          <div class="step-title">CIFA Fashion Business Center</div>
+
+          <div class="photo-card">
+            <img src="IMG_7834.JPG" alt="CIFA Fashion Business Center">
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">📍 48.9181, 2.3733</span>
+                <span class="meta-pill">⬆ Alt. N/A</span>
+                <span class="meta-pill">🕒 12:40</span>
+                <span class="meta-pill">📐 1152×2048 px</span>
+              </div>
+
+              <p class="meta-label">Couleurs &amp; usage</p>
+              <ul class="meta-list"><li>Façades, enseignes, zone commerciale.</li></ul>
+
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Créatif, commercial.</li></ul>
+
+              <p class="meta-label">Description</p>
+              <ul class="meta-list"><li>Pôle de la mode et du commerce : activité professionnelle, flux et logistique.</li></ul>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- COLONNE DROITE : ANALYSE -->
+      <aside class="side-panel" aria-label="Analyse des données">
+        <section class="card">
+          <h3>Interface de valorisation des données</h3>
+          <div class="exif-row"><span class="icon">🖼️</span><span>Photos + dimensions (px).</span></div>
+          <div class="exif-row"><span class="icon">📍</span><span>Coordonnées GPS (lat, lon).</span></div>
+          <div class="exif-row"><span class="icon">⬆</span><span>Altitude (N/A si non disponible).</span></div>
+          <div class="exif-row"><span class="icon">🕒</span><span>Heure (ordre de la balade).</span></div>
+          <p style="margin-top:.5rem;">
+            Les informations sont affichées dans la timeline et dans les popups de la carte.
+          </p>
+        </section>
+
+        <section class="card">
+          <h3>Thèmes observés (approx.)</h3>
+          <p>Répartition des thèmes :</p>
+          <div class="chart-bar">
+            <div class="bar" title="Architecture / équipements"></div>
+            <div class="bar" title="Mobilité / flux"></div>
+            <div class="bar" title="Nature / pause"></div>
+          </div>
+          <div class="bar-labels">
+            <span>Arch.</span>
+            <span>Flux</span>
+            <span>Nature</span>
+          </div>
+          <p style="margin-top:.6rem;">
+            Le parcours montre une alternance entre équipements récents, espaces de circulation et lieux de respiration.
+          </p>
+        </section>
+
+        <section class="card">
+          <h3>Synthèse : contrastes</h3>
+          <ul style="margin-left:1rem; margin-top:.3rem;">
+            <li><strong>Institutionnel</strong> (Humathèque) vs <strong>quotidien</strong> (supermarché).</li>
+            <li><strong>Mobilité</strong> (métro, passage) vs <strong>pause</strong> (jardin).</li>
+            <li><strong>Ancien</strong> (quartier) vs <strong>économique</strong> (CIFA).</li>
+          </ul>
+        </section>
+      </aside>
+    </section>
+
+    <footer>
+      Projet de visualisation – Parcours photographique à Aubervilliers.
+    </footer>
+  </main>
+
+  <!-- SCRIPT LEAFLET : CARTE + POINTS + CHEMIN -->
+  <script>
+    const points = [
+      { id:"A", name:"Humathèque", coords:[48.9129, 2.3658], img:"image0 (1).jpeg", color:"#4A90E2",
+        time:"11:00", alt:"N/A", dim:"1152×2048 px",
+        sentiment:"Calme, institutionnel, savoir",
+        desc:"Bâtiment dédié aux sciences humaines. Architecture moderne et atmosphère studieuse."
+      },
+      { id:"B", name:"Supermarché proche de l’Humathèque", coords:[48.9131, 2.3662], img:"IMG_7841.JPG", color:"#F5A623",
+        time:"11:10", alt:"N/A", dim:"1152×2048 px",
+        sentiment:"Quotidien, proximité",
+        desc:"Commerce de quartier : lieu de passage entre habitants et étudiants."
+      },
+      { id:"C", name:"Passage piéton devant le collège", coords:[48.9134, 2.3668], img:"IMG_7840(2).JPG", color:"#7ED321",
+        time:"11:20", alt:"N/A", dim:"1152×2048 px",
+        sentiment:"Circulation, vigilance",
+        desc:"Zone de traversée et de flux (piétons/voitures), espace d’attention."
+      },
+      { id:"D", name:"Métro ligne 12 – Front Populaire", coords:[48.9149, 2.3695], img:"IMG_7839.JPG", color:"#1E90FF",
+        time:"11:35", alt:"N/A", dim:"1152×2048 px",
+        sentiment:"Mobilité, transition",
+        desc:"Station de métro : point de connexion, mouvement et orientation."
+      },
+      { id:"E", name:"Studio 217 – Star Academy", coords:[48.9192, 2.3751], img:"IMG_7836.JPG", color:"#D0021B",
+        time:"11:50", alt:"N/A", dim:"1152×2048 px",
+        sentiment:"Spectacle, média, énergie",
+        desc:"Lieu de production audiovisuelle : univers médiatique dans le tissu urbain."
+      },
+      { id:"F", name:"Jardin / espace vert", coords:[48.9172, 2.3728], img:"IMG_7835.JPG", color:"#2ECC71",
+        time:"12:05", alt:"N/A", dim:"1152×2048 px",
+        sentiment:"Apaisant, respiration",
+        desc:"Pause végétale au milieu de la ville : calme et contraste avec la circulation."
+      },
+      { id:"G", name:"Quartier ancien d’Aubervilliers", coords:[48.9121, 2.3821], img:"IMG_6981.jpg", color:"#8B572A",
+        time:"12:25", alt:"N/A", dim:"1536×2048 px",
+        sentiment:"Historique, mémoire",
+        desc:"Rue plus ancienne : textures, traces du passé et ambiance de proximité."
+      },
+      { id:"H", name:"CIFA Fashion Business Center", coords:[48.9181, 2.3733], img:"IMG_7834.JPG", color:"#BD10E0",
+        time:"12:40", alt:"N/A", dim:"1152×2048 px",
+        sentiment:"Créatif, commercial",
+        desc:"Pôle de la mode et du commerce : activité, logistique et flux professionnels."
+      }
+    ];
+
+    const map = L.map("map").setView([48.914, 2.372], 14);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const latlngs = [];
+
+    points.forEach((p) => {
+      latlngs.push(p.coords);
+
+      const popupContent = `
+        <div style="max-width:210px;">
+          <strong>${p.id}. ${p.name}</strong><br/>
+          <div style="font-size:12px;color:#444;margin:4px 0 6px;">
+            🕒 ${p.time} · 📍 ${p.coords[0]}, ${p.coords[1]} · 📐 ${p.dim} · ⬆ ${p.alt}
+          </div>
+          <img src="${p.img}" alt="${p.name}"
+               style="width:100%; margin:6px 0; border-radius:8px; border:1px solid #eee;"/>
+          <div style="font-size:12px;"><b>Sentiment :</b> ${p.sentiment}</div>
+          <div style="font-size:12px;margin-top:4px;">${p.desc}</div>
+        </div>
+      `;
+
+      L.circleMarker(p.coords, {
+        radius: 7,
+        color: p.color,
+        fillColor: p.color,
+        fillOpacity: 0.9
+      }).addTo(map).bindPopup(popupContent);
+    });
+
+    L.polyline(latlngs, {
+      color: "#2563eb",
+      weight: 4,
+      opacity: 0.85
+    }).addTo(map);
+
+    map.fitBounds(latlngs, { padding: [30, 30] });
+  </script>
 </body>
 </html>
