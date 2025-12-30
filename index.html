@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Parcours photographique – Aubervilliers</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f1ea;
+      margin: 0;
+      padding: 1rem;
+    }
+    h1 {
+      text-align: center;
+    }
+    #map {
+      height: 400px;
+      margin: 2rem 0;
+      border-radius: 12px;
+    }
+    .card {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    img {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: .5rem;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Parcours photographique – Aubervilliers</h1>
+
+<div id="map"></div>
+
+<div class="card">
+  <h3>Humathèque</h3>
+  <p>Sentiment : calme, institutionnel, savoir</p>
+  <img src="https://github.com/user-attachments/assets/7595d19d-58f8-48e4-8808-72bba64f6983">
+</div>
+
+<div class="card">
+  <h3>Supermarché</h3>
+  <p>Sentiment : quotidien, proximité</p>
+  <img src="https://github.com/user-attachments/assets/5eea573c-9225-492d-a593-8d9480802caa">
+</div>
+
+<script>
+  const map = L.map("map").setView([48.9129, 2.3658], 14);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
+
+  L.marker([48.9129, 2.3658]).addTo(map)
+    .bindPopup("Humathèque");
+
+  L.marker([48.9131, 2.3662]).addTo(map)
+    .bindPopup("Supermarché");
+</script>
+
+</body>
+</html>
