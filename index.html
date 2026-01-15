@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -139,6 +138,15 @@
 
     canvas { width: 100% !important; max-height: 250px; margin-top: .5rem; }
 
+    /* petit bloc texte sous le graphique dimensions */
+    .dims-summary {
+      margin-top: .65rem;
+      font-size: .82rem;
+      color: var(--text-soft);
+      line-height: 1.45;
+    }
+    .dims-summary b { color: var(--text-main); font-weight: 650; }
+
     footer { margin-top: 2.5rem; text-align: center; font-size: .78rem; color: var(--text-soft); }
   </style>
 </head>
@@ -161,8 +169,8 @@
 
     <section class="layout">
       <!-- TIMELINE -->
-      <section class="timeline" aria-label="Parcours à pied">
-        <!-- Ici tu peux copier tes <article class="step"> pour chaque point -->
+      <section class="timeline" aria-label="Parcours à pied" id="timeline">
+        <!-- Remplie automatiquement par JS (ordre par heure) -->
       </section>
 
       <!-- COLONNE DROITE : ANALYSE + GRAPHIQUES -->
@@ -187,13 +195,11 @@
           <canvas id="radarJardin"></canvas>
         </section>
 
-        <!-- ✅ 3ème VISUALISATION -->
+        <!-- ✅ 3e VISUALISATION : DIMENSIONS -->
         <section class="card">
-          <h3>Dimensions & position (px vs latitude)</h3>
-          <canvas id="dimGeoChart"></canvas>
-          <p style="font-size:0.8rem; color:#6b7280; margin-top:0.35rem;">
-            Axe X = largeur (px), axe Y = latitude. Couleur = format (portrait/paysage/carré).
-          </p>
+          <h3>Dimensions des photos (px)</h3>
+          <canvas id="dimensionChart"></canvas>
+          <div class="dims-summary" id="dimsSummary"></div>
         </section>
       </aside>
     </section>
@@ -238,7 +244,49 @@
       }
     ];
 
-    // --- CARTE ---
+    // =========================
+    // 1) TIMELINE (ordre par heure)
+    // =========================
+    function timeToMinutes(t){
+      const [h,m] = t.split(":").map(Number);
+      return h*60 + m;
+    }
+
+    const pointsSorted = [...points].sort((a,b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+    const timeline = document.getElementById("timeline");
+    timeline.innerHTML = pointsSorted.map((p, idx) => `
+      <article class="step">
+        <div class="step-marker">${p.id}</div>
+        <div class="step-header">${p.time}</div>
+        <div class="step-title">${idx+1}. ${p.name}</div>
+
+        <div class="photo-card">
+          <img src="${p.img}" alt="${p.name}">
+          <div class="photo-meta">
+            <div class="meta-row">
+              <span class="meta-pill">📍 ${p.coords[0]}, ${p.coords[1]}</span>
+              <span class="meta-pill">📐 ${p.dim}</span>
+              <span class="meta-pill">⬆ ${p.alt}</span>
+            </div>
+
+            <div class="meta-label">Sentiment</div>
+            <ul class="meta-list">
+              <li>${p.sentiment}</li>
+            </ul>
+
+            <div class="meta-label">Description</div>
+            <ul class="meta-list">
+              <li>${p.desc}</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+    `).join("");
+
+    // =========================
+    // 2) CARTE (inchangée)
+    // =========================
     const map = L.map("map").setView([48.914, 2.372], 14);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
 
@@ -261,10 +309,12 @@
     L.polyline(latlngs, { color: "#2563eb", weight: 4, opacity: 0.85 }).addTo(map);
     map.fitBounds(latlngs, { padding: [30, 30] });
 
-    // --- GRAPHIQUE ALTITUDE ---
+    // =========================
+    // 3) GRAPHIQUE ALTITUDE (inchangé)
+    // =========================
     new Chart(document.getElementById('altitudeChart'), {
       type: 'line',
-      data: { 
+      data: {
         labels: points.map(p => p.time),
         datasets: [{
           label: 'Altitude (m)',
@@ -278,7 +328,9 @@
       options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // --- RADARS ---
+    // =========================
+    // 4) RADARS (inchangé)
+    // =========================
     const radarOptions = { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 10 } } };
 
     new Chart(document.getElementById('radarCIFA'), {
@@ -309,105 +361,103 @@
       options: radarOptions
     });
 
-    // --- ✅ 3ème VISUALISATION : Dimensions (px) vs Latitude (scatter) ---
-    function parseDim(dimStr) {
-      const cleaned = (dimStr || "").replace(/\s*px\s*/i, "");
-      const match = cleaned.match(/(\d+)\s*[×x]\s*(\d+)/);
-      if (!match) return { w: NaN, h: NaN };
-      return { w: Number(match[1]), h: Number(match[2]) };
+    // =========================
+    // ✅ 5) 3e VISUALISATION : DIMENSIONS
+    // =========================
+    function parseDim(dimStr){
+      // accepte "1152×2048 px" ou "1152x2048 px"
+      const clean = (dimStr || "").toLowerCase().replace("px","").trim();
+      const parts = clean.split(/[×x]/).map(s => parseInt(s.trim(), 10));
+      const w = Number.isFinite(parts[0]) ? parts[0] : 0;
+      const h = Number.isFinite(parts[1]) ? parts[1] : 0;
+      return { w, h };
     }
 
-    function getOrientation(w, h) {
-      if (!isFinite(w) || !isFinite(h)) return "inconnu";
-      if (w === h) return "carré";
-      return w > h ? "paysage" : "portrait";
-    }
+    const dims = pointsSorted.map(p => ({ ...p, ...parseDim(p.dim) }));
+    const labelsDims = dims.map(p => `${p.id} (${p.time})`);
 
-    const byOrientation = { portrait: [], paysage: [], "carré": [], inconnu: [] };
-
-    points.forEach((p) => {
-      const { w, h } = parseDim(p.dim);
-      const orientation = getOrientation(w, h);
-
-      byOrientation[orientation].push({
-        x: w,             // largeur en px
-        y: p.coords[0],   // latitude
-        _meta: {
-          id: p.id,
-          name: p.name,
-          time: p.time,
-          lat: p.coords[0],
-          lon: p.coords[1],
-          w, h,
-          sentiment: p.sentiment
-        }
-      });
-    });
-
-    const dimGeoDatasets = [
-      {
-        label: "Portrait",
-        data: byOrientation.portrait,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        backgroundColor: "rgba(43, 108, 176, 0.6)",
-        borderColor: "rgba(43, 108, 176, 1)"
+    // graphe barres : largeur + hauteur
+    new Chart(document.getElementById('dimensionChart'), {
+      type: 'bar',
+      data: {
+        labels: labelsDims,
+        datasets: [
+          {
+            label: 'Largeur (px)',
+            data: dims.map(p => p.w)
+          },
+          {
+            label: 'Hauteur (px)',
+            data: dims.map(p => p.h)
+          }
+        ]
       },
-      {
-        label: "Paysage",
-        data: byOrientation.paysage,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        backgroundColor: "rgba(245, 166, 35, 0.6)",
-        borderColor: "rgba(245, 166, 35, 1)"
-      },
-      {
-        label: "Carré",
-        data: byOrientation["carré"],
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        backgroundColor: "rgba(46, 204, 113, 0.6)",
-        borderColor: "rgba(46, 204, 113, 1)"
-      },
-      {
-        label: "Inconnu",
-        data: byOrientation.inconnu,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        backgroundColor: "rgba(107, 114, 128, 0.6)",
-        borderColor: "rgba(107, 114, 128, 1)"
-      }
-    ];
-
-    new Chart(document.getElementById("dimGeoChart"), {
-      type: "scatter",
-      data: { datasets: dimGeoDatasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           tooltip: {
             callbacks: {
-              label: (ctx) => {
-                const m = ctx.raw._meta;
-                return [
-                  `${m.id}. ${m.name} (${m.time})`,
-                  `Largeur: ${m.w}px · Hauteur: ${m.h}px`,
-                  `Lat: ${m.lat} · Lon: ${m.lon}`,
-                  `Sentiment: ${m.sentiment}`
-                ];
+              afterBody: (items) => {
+                const i = items?.[0]?.dataIndex ?? 0;
+                const p = dims[i];
+                const ratio = (p.w && p.h) ? (p.w / p.h) : 0;
+                const orientation = ratio > 1.05 ? "Paysage" : (ratio < 0.95 ? "Portrait" : "Carré");
+                return `Format: ${p.w}×${p.h} • ${orientation}`;
               }
             }
-          },
-          legend: { position: "bottom" }
+          }
         },
         scales: {
-          x: { title: { display: true, text: "Largeur (px)" }, ticks: { precision: 0 } },
-          y: { title: { display: true, text: "Latitude" } }
+          x: { ticks: { maxRotation: 60, minRotation: 30 } },
+          y: { beginAtZero: true }
         }
       }
     });
+
+    // =========================
+    // ✅ “Présentation” automatique basée sur tes dimensions
+    // =========================
+    const withPixels = dims.map(p => ({
+      ...p,
+      pixels: (p.w || 0) * (p.h || 0),
+      ratio: (p.w && p.h) ? (p.w / p.h) : 0
+    }));
+
+    const biggest = withPixels.reduce((a,b) => (b.pixels > a.pixels ? b : a), withPixels[0]);
+    const smallest = withPixels.reduce((a,b) => (b.pixels < a.pixels ? b : a), withPixels[0]);
+
+    function orientationOf(p){
+      if (!p.ratio) return "N/A";
+      if (p.ratio > 1.05) return "paysage";
+      if (p.ratio < 0.95) return "portrait";
+      return "carré";
+    }
+
+    const orientationCounts = withPixels.reduce((acc,p) => {
+      const o = orientationOf(p);
+      acc[o] = (acc[o] || 0) + 1;
+      return acc;
+    }, {});
+
+    const avgW = Math.round(withPixels.reduce((s,p)=>s+(p.w||0),0)/withPixels.length);
+    const avgH = Math.round(withPixels.reduce((s,p)=>s+(p.h||0),0)/withPixels.length);
+
+    const summary = `
+      <div><b>Lecture des formats :</b></div>
+      <div>• Format moyen : <b>${avgW}×${avgH}px</b></div>
+      <div>• Plus grande image : <b>${biggest.id}</b> (${biggest.time}) → <b>${biggest.w}×${biggest.h}px</b></div>
+      <div>• Plus petite image : <b>${smallest.id}</b> (${smallest.time}) → <b>${smallest.w}×${smallest.h}px</b></div>
+      <div style="margin-top:.35rem;">• Répartition orientations : 
+        <b>portrait</b> ${orientationCounts.portrait || 0} · 
+        <b>paysage</b> ${orientationCounts.paysage || 0} · 
+        <b>carré</b> ${orientationCounts.carré || 0}
+      </div>
+      <div style="margin-top:.35rem;">
+        👉 Ici, tes images sont majoritairement <b>${(orientationCounts.portrait||0) >= (orientationCounts.paysage||0) ? "portrait" : "paysage"}</b>, ce qui donne une lecture “verticale” cohérente pour une balade urbaine.
+      </div>
+    `;
+    document.getElementById("dimsSummary").innerHTML = summary;
   </script>
 </body>
 </html>
-```
