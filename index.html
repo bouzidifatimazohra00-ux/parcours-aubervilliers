@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -185,6 +186,15 @@
           <canvas id="radarCIFA"></canvas>
           <canvas id="radarJardin"></canvas>
         </section>
+
+        <!-- ✅ 3ème VISUALISATION -->
+        <section class="card">
+          <h3>Dimensions & position (px vs latitude)</h3>
+          <canvas id="dimGeoChart"></canvas>
+          <p style="font-size:0.8rem; color:#6b7280; margin-top:0.35rem;">
+            Axe X = largeur (px), axe Y = latitude. Couleur = format (portrait/paysage/carré).
+          </p>
+        </section>
       </aside>
     </section>
 
@@ -298,6 +308,106 @@
       },
       options: radarOptions
     });
+
+    // --- ✅ 3ème VISUALISATION : Dimensions (px) vs Latitude (scatter) ---
+    function parseDim(dimStr) {
+      const cleaned = (dimStr || "").replace(/\s*px\s*/i, "");
+      const match = cleaned.match(/(\d+)\s*[×x]\s*(\d+)/);
+      if (!match) return { w: NaN, h: NaN };
+      return { w: Number(match[1]), h: Number(match[2]) };
+    }
+
+    function getOrientation(w, h) {
+      if (!isFinite(w) || !isFinite(h)) return "inconnu";
+      if (w === h) return "carré";
+      return w > h ? "paysage" : "portrait";
+    }
+
+    const byOrientation = { portrait: [], paysage: [], "carré": [], inconnu: [] };
+
+    points.forEach((p) => {
+      const { w, h } = parseDim(p.dim);
+      const orientation = getOrientation(w, h);
+
+      byOrientation[orientation].push({
+        x: w,             // largeur en px
+        y: p.coords[0],   // latitude
+        _meta: {
+          id: p.id,
+          name: p.name,
+          time: p.time,
+          lat: p.coords[0],
+          lon: p.coords[1],
+          w, h,
+          sentiment: p.sentiment
+        }
+      });
+    });
+
+    const dimGeoDatasets = [
+      {
+        label: "Portrait",
+        data: byOrientation.portrait,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        backgroundColor: "rgba(43, 108, 176, 0.6)",
+        borderColor: "rgba(43, 108, 176, 1)"
+      },
+      {
+        label: "Paysage",
+        data: byOrientation.paysage,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        backgroundColor: "rgba(245, 166, 35, 0.6)",
+        borderColor: "rgba(245, 166, 35, 1)"
+      },
+      {
+        label: "Carré",
+        data: byOrientation["carré"],
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        backgroundColor: "rgba(46, 204, 113, 0.6)",
+        borderColor: "rgba(46, 204, 113, 1)"
+      },
+      {
+        label: "Inconnu",
+        data: byOrientation.inconnu,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        backgroundColor: "rgba(107, 114, 128, 0.6)",
+        borderColor: "rgba(107, 114, 128, 1)"
+      }
+    ];
+
+    new Chart(document.getElementById("dimGeoChart"), {
+      type: "scatter",
+      data: { datasets: dimGeoDatasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const m = ctx.raw._meta;
+                return [
+                  `${m.id}. ${m.name} (${m.time})`,
+                  `Largeur: ${m.w}px · Hauteur: ${m.h}px`,
+                  `Lat: ${m.lat} · Lon: ${m.lon}`,
+                  `Sentiment: ${m.sentiment}`
+                ];
+              }
+            }
+          },
+          legend: { position: "bottom" }
+        },
+        scales: {
+          x: { title: { display: true, text: "Largeur (px)" }, ticks: { precision: 0 } },
+          y: { title: { display: true, text: "Latitude" } }
+        }
+      }
+    });
   </script>
 </body>
 </html>
+```
