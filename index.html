@@ -1,9 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Croquis – Parcours photographique d'Aubervilliers (Fatima)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Leaflet CSS & JS -->
   <link
@@ -51,6 +52,7 @@
       display: grid;
       grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
       gap: 2.5rem;
+      align-items: start; /* ✅ FIX: empêche la timeline d'être étirée vers le bas */
     }
 
     @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
@@ -67,6 +69,10 @@
       background: linear-gradient(to bottom, var(--accent), var(--accent-soft));
       border-radius: 999px;
     }
+
+    /* ✅ Bonus: si la timeline est vide, on cache la ligne et l'espace */
+    .timeline:empty::before { display: none; }
+    .timeline:empty { padding-left: 0; }
 
     .step { position: relative; margin-bottom: 1.75rem; }
     .step:last-child { margin-bottom: 0; }
@@ -138,7 +144,6 @@
 
     canvas { width: 100% !important; max-height: 250px; margin-top: .5rem; }
 
-    /* petit bloc texte sous le graphique dimensions */
     .dims-summary {
       margin-top: .65rem;
       font-size: .82rem;
@@ -207,7 +212,6 @@
     <footer>Projet de visualisation – Parcours photographique à Aubervilliers.</footer>
   </main>
 
-  <!-- SCRIPT LEAFLET + CHART.JS -->
   <script>
     const points = [
       { id:"A", name:"Humathèque", coords:[48.9129, 2.3658], img:"image0 (1).jpeg", color:"#4A90E2",
@@ -365,7 +369,6 @@
     // ✅ 5) 3e VISUALISATION : DIMENSIONS
     // =========================
     function parseDim(dimStr){
-      // accepte "1152×2048 px" ou "1152x2048 px"
       const clean = (dimStr || "").toLowerCase().replace("px","").trim();
       const parts = clean.split(/[×x]/).map(s => parseInt(s.trim(), 10));
       const w = Number.isFinite(parts[0]) ? parts[0] : 0;
@@ -376,20 +379,13 @@
     const dims = pointsSorted.map(p => ({ ...p, ...parseDim(p.dim) }));
     const labelsDims = dims.map(p => `${p.id} (${p.time})`);
 
-    // graphe barres : largeur + hauteur
     new Chart(document.getElementById('dimensionChart'), {
       type: 'bar',
       data: {
         labels: labelsDims,
         datasets: [
-          {
-            label: 'Largeur (px)',
-            data: dims.map(p => p.w)
-          },
-          {
-            label: 'Hauteur (px)',
-            data: dims.map(p => p.h)
-          }
+          { label: 'Largeur (px)', data: dims.map(p => p.w) },
+          { label: 'Hauteur (px)', data: dims.map(p => p.h) }
         ]
       },
       options: {
@@ -416,7 +412,7 @@
     });
 
     // =========================
-    // ✅ “Présentation” automatique basée sur tes dimensions
+    // ✅ Présentation automatique (basée sur tes dimensions)
     // =========================
     const withPixels = dims.map(p => ({
       ...p,
@@ -443,21 +439,18 @@
     const avgW = Math.round(withPixels.reduce((s,p)=>s+(p.w||0),0)/withPixels.length);
     const avgH = Math.round(withPixels.reduce((s,p)=>s+(p.h||0),0)/withPixels.length);
 
-    const summary = `
+    document.getElementById("dimsSummary").innerHTML = `
       <div><b>Lecture des formats :</b></div>
       <div>• Format moyen : <b>${avgW}×${avgH}px</b></div>
       <div>• Plus grande image : <b>${biggest.id}</b> (${biggest.time}) → <b>${biggest.w}×${biggest.h}px</b></div>
       <div>• Plus petite image : <b>${smallest.id}</b> (${smallest.time}) → <b>${smallest.w}×${smallest.h}px</b></div>
-      <div style="margin-top:.35rem;">• Répartition orientations : 
-        <b>portrait</b> ${orientationCounts.portrait || 0} · 
-        <b>paysage</b> ${orientationCounts.paysage || 0} · 
+      <div style="margin-top:.35rem;">• Répartition orientations :
+        <b>portrait</b> ${orientationCounts.portrait || 0} ·
+        <b>paysage</b> ${orientationCounts.paysage || 0} ·
         <b>carré</b> ${orientationCounts.carré || 0}
       </div>
-      <div style="margin-top:.35rem;">
-        👉 Ici, tes images sont majoritairement <b>${(orientationCounts.portrait||0) >= (orientationCounts.paysage||0) ? "portrait" : "paysage"}</b>, ce qui donne une lecture “verticale” cohérente pour une balade urbaine.
-      </div>
     `;
-    document.getElementById("dimsSummary").innerHTML = summary;
   </script>
 </body>
 </html>
+```
