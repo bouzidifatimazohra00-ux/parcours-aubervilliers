@@ -114,6 +114,7 @@ h2{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:2rem}
   width:100%;
   border-radius:10px;
   object-fit:cover;
+  cursor:pointer;
 }
 
 @media(max-width:600px){
@@ -147,6 +148,12 @@ h2{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:2rem}
 .meta{
   font-size:.82rem;
   color:var(--muted);
+}
+
+.description-popup{
+  font-size:0.85rem;
+  color:#374151;
+  margin-top:0.4rem;
 }
 
 .side{
@@ -235,6 +242,14 @@ Les formats varient selon les espaces traversés : les lieux ouverts favorisent 
 </p>
 </div>
 
+<div class="card">
+<h3>Rythme de marche</h3>
+<canvas id="rythmeChart"></canvas>
+<p class="meta">
+Représente le rythme de déplacement selon chaque point du parcours.
+</p>
+</div>
+
 <div class="card" style="margin-top:2rem;max-width:760px;margin-inline:auto;">
 <h3>Conclusion</h3>
 <p class="meta">
@@ -256,16 +271,16 @@ que dans le regard photographique.
 <script>
 // ================== Données ==================
 const points = [
-  {id:"A", name:"Humathèque", coords:[48.9129,2.3658], img:"image0 (1).jpeg", time:"11:00", alt:0, emotion:1, espace:"Institutionnel", rythme:"Lent", dim:"1152x2048"},
-  {id:"B", name:"Supermarché proche", coords:[48.9131,2.3662], img:"IMG_7841.JPG", time:"11:10", alt:0, emotion:2, espace:"Commercial / Média", rythme:"Rapide", dim:"1152x2048"},
-  {id:"C", name:"Passage piéton", coords:[48.9134,2.3668], img:"IMG_7840(2).JPG", time:"11:20", alt:0, emotion:3, espace:"Flux / Résidentiel", rythme:"Rapide", dim:"1152x2048"},
-  {id:"D", name:"Studio 217 – Star Academy", coords:[48.9192,2.3751], img:"IMG_7836.JPG", time:"11:50", alt:0, emotion:5, espace:"Commercial / Média", rythme:"Pause", dim:"1152x2048"},
-  {id:"E", name:"Jardin / espace vert", coords:[48.9172,2.3728], img:"IMG_7835.JPG", time:"12:05", alt:0, emotion:1, espace:"Vert", rythme:"Pause", dim:"1152x2048"},
-  {id:"F", name:"Quartier ancien", coords:[48.9121,2.3821], img:"IMG_6981.jpg", time:"12:25", alt:0, emotion:2, espace:"Flux / Résidentiel", rythme:"Pause", dim:"1536x2048"},
-  {id:"G", name:"CIFA Fashion Business Center", coords:[48.9181,2.3733], img:"IMG_7834.JPG", time:"12:40", alt:0, emotion:4, espace:"Commercial / Média", rythme:"Rapide", dim:"1152x2048"}
+  {id:"A", name:"Humathèque", coords:[48.9129,2.3658], img:"image0 (1).jpeg", time:"11:00", alt:0, emotion:1, rythmeVal:1, espace:"Institutionnel", rythme:"Lent", dim:"1152x2048", desc:"Bâtiment institutionnel, atmosphère studieuse."},
+  {id:"B", name:"Supermarché proche", coords:[48.9131,2.3662], img:"IMG_7841.JPG", time:"11:10", alt:0, emotion:2, rythmeVal:3, espace:"Commercial / Média", rythme:"Rapide", dim:"1152x2048", desc:"Commerce de quartier, activité quotidienne."},
+  {id:"C", name:"Passage piéton", coords:[48.9134,2.3668], img:"IMG_7840(2).JPG", time:"11:20", alt:0, emotion:3, rythmeVal:3, espace:"Flux / Résidentiel", rythme:"Rapide", dim:"1152x2048", desc:"Flux piétonnier, mouvement constant."},
+  {id:"D", name:"Studio 217 – Star Academy", coords:[48.9192,2.3751], img:"IMG_7836.JPG", time:"11:50", alt:0, emotion:5, rythmeVal:0, espace:"Commercial / Média", rythme:"Pause", dim:"1152x2048", desc:"Lieu de production audiovisuelle : univers médiatique."},
+  {id:"E", name:"Jardin / espace vert", coords:[48.9172,2.3728], img:"IMG_7835.JPG", time:"12:05", alt:0, emotion:1, rythmeVal:0, espace:"Vert", rythme:"Pause", dim:"1152x2048", desc:"Pause végétale et respiration au milieu de la ville."},
+  {id:"F", name:"Quartier ancien", coords:[48.9121,2.3821], img:"IMG_6981.jpg", time:"12:25", alt:0, emotion:2, rythmeVal:0, espace:"Flux / Résidentiel", rythme:"Pause", dim:"1536x2048", desc:"Rue ancienne avec textures et ambiance de proximité."},
+  {id:"G", name:"CIFA Fashion Business Center", coords:[48.9181,2.3733], img:"IMG_7834.JPG", time:"12:40", alt:0, emotion:4, rythmeVal:3, espace:"Commercial / Média", rythme:"Rapide", dim:"1152x2048", desc:"Pôle de mode et commerce, activité et flux."}
 ];
 
-// ================== Timeline filtrable ==================
+// ================== Timeline avec description ==================
 const timeline=document.getElementById("timeline");
 function renderTimeline(filter="all"){
   timeline.innerHTML="";
@@ -286,6 +301,7 @@ function renderTimeline(filter="all"){
               <span class="tag">🚶 ${p.rythme}</span>
             </div>
             <div class="meta">📍 ${p.coords[0]}, ${p.coords[1]} · 📐 ${p.dim}</div>
+            <div class="description-popup">${p.desc}</div>
           </div>
         </div>
       </div>`;
@@ -295,64 +311,31 @@ function renderTimeline(filter="all"){
 }
 renderTimeline();
 
-// ================== Légende interactive ==================
-document.querySelectorAll(".legend span").forEach(el=>{
-  el.onclick=()=>{
-    document.querySelectorAll(".legend span").forEach(s=>s.classList.remove("active"));
-    el.classList.add("active");
-    renderTimeline(el.dataset.filter);
-  }
-});
-
 // ================== Animation scroll ==================
 function fadeInSteps(){
   const steps=document.querySelectorAll(".step");
   steps.forEach((el,i)=>setTimeout(()=>el.classList.add("visible"), i*150));
 }
 
-// ================== Carte Leaflet avec popup pro ==================
+// ================== Carte Leaflet ==================
 const map = L.map("map").setView([48.914, 2.372], 14);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
-
 const latlngs = [];
-
-points.forEach(p => {
+points.forEach(p=>{
   latlngs.push(p.coords);
-
-  // Popup HTML
   const popupContent = `
-  <div style="display:flex; gap:10px; max-width:250px; font-size:14px; font-family:sans-serif;">
+  <div style="display:flex; gap:10px; max-width:250px; font-size:14px;">
     <img src="${p.img}" alt="${p.name}" style="width:100px; height:70px; object-fit:cover; border-radius:6px; border:1px solid #ddd;">
     <div style="flex:1;">
-      <strong>${p.id}. ${p.name}</strong><br/>
-      <div style="margin:4px 0; color:#444; font-size:13px;">
-        📍 ${p.coords[0].toFixed(4)}, ${p.coords[1].toFixed(4)}<br/>
-        🚶 ${p.rythme} · 📐 ${p.dim} · ❤️ Intensité ${p.emotion}
-      </div>
-      <div style="font-size:13px; color:#333; margin-top:4px;">
-        ${p.name === "Quartier ancien" ? "Rue ancienne avec textures et ambiance de proximité." :
-          p.name === "Jardin / espace vert" ? "Pause végétale et respiration au milieu de la ville." :
-          p.name === "Studio 217 – Star Academy" ? "Lieu de production audiovisuelle : univers médiatique." :
-          p.name === "Supermarché proche" ? "Commerce de quartier, activité quotidienne." :
-          p.name === "Humathèque" ? "Bâtiment institutionnel, atmosphère studieuse." :
-          p.name === "CIFA Fashion Business Center" ? "Pôle de mode et commerce, activité et flux." :
-          "Point du parcours."}
-      </div>
+      <strong>${p.id}. ${p.name}</strong>
+      <div style="font-size:13px; color:#444;">📍 ${p.coords[0].toFixed(4)}, ${p.coords[1].toFixed(4)}<br>🚶 ${p.rythme} · 📐 ${p.dim} · ❤️ Intensité ${p.emotion}</div>
+      <div style="font-size:13px; margin-top:4px;">${p.desc}</div>
     </div>
-  </div>
-  `;
-
-  L.circleMarker(p.coords, {
-    radius: 7,
-    color: "#2563eb",
-    fillColor: "#2563eb",
-    fillOpacity: 0.9
-  }).addTo(map)
-    .bindPopup(popupContent);
+  </div>`;
+  L.circleMarker(p.coords,{radius:7,color:"#2563eb",fillColor:"#2563eb",fillOpacity:0.9}).addTo(map).bindPopup(popupContent);
 });
-
-L.polyline(latlngs, { color: "#2563eb", weight: 4, opacity: 0.85 }).addTo(map);
-map.fitBounds(latlngs, { padding: [30, 30] });
+L.polyline(latlngs,{color:"#2563eb",weight:4,opacity:0.85}).addTo(map);
+map.fitBounds(latlngs,{padding:[30,30]});
 
 // ================== Graphiques ==================
 new Chart(document.getElementById('altitudeChart'),{
@@ -373,6 +356,13 @@ new Chart(document.getElementById('dimensionChart'),{
   type:'bar',
   data:{labels:points.map(p=>p.id),datasets:[{label:'Largeur',data:dims.map(d=>d.x),backgroundColor:'#2563eb'},{label:'Hauteur',data:dims.map(d=>d.y),backgroundColor:'#9333ea'}]},
   options:{responsive:true,maintainAspectRatio:false}
+});
+
+// ======= Nouveau graphique : Rythme de marche =======
+new Chart(document.getElementById('rythmeChart'),{
+  type:'bar',
+  data:{labels:points.map(p=>p.time),datasets:[{label:'Rythme',data:points.map(p=>p.rythmeVal),backgroundColor:'#22c55e'}]},
+  options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,min:0,max:3,stepSize:1}}}
 });
 </script>
 
