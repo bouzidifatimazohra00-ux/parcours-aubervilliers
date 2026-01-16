@@ -175,6 +175,7 @@ footer{
   display:inline-flex;
   align-items:center;
   gap:.3rem;
+  cursor:pointer;
 }
 .legend .box{
   width:12px;
@@ -182,6 +183,7 @@ footer{
   display:inline-block;
   border-radius:3px;
 }
+.legend .active{border:2px solid #000;}
 </style>
 </head>
 
@@ -198,10 +200,11 @@ L’objectif est de croiser parcours urbain, forme de l’image et expérience v
 </div>
 
 <div class="legend">
-  <span><div class="box" style="background:#3b82f6"></div> Institutionnel</span>
-  <span><div class="box" style="background:#9333ea"></div> Commercial / Média</span>
-  <span><div class="box" style="background:#22c55e"></div> Vert</span>
-  <span><div class="box" style="background:#f59e0b"></div> Flux / Résidentiel</span>
+  <span data-filter="Institutionnel"><div class="box" style="background:#3b82f6"></div> Institutionnel</span>
+  <span data-filter="Commercial / Média"><div class="box" style="background:#9333ea"></div> Commercial / Média</span>
+  <span data-filter="Vert"><div class="box" style="background:#22c55e"></div> Vert</span>
+  <span data-filter="Flux / Résidentiel"><div class="box" style="background:#f59e0b"></div> Flux / Résidentiel</span>
+  <span data-filter="all"><div class="box" style="background:#000000"></div> Tous</span>
 </div>
 
 <div id="map" class="map"></div>
@@ -264,10 +267,10 @@ const points = [
 
 // ================== Timeline filtrable ==================
 const timeline=document.getElementById("timeline");
-function renderTimeline(filter=null){
+function renderTimeline(filter="all"){
   timeline.innerHTML="";
   points.forEach(p=>{
-    if(filter && p.espace !== filter) return;
+    if(filter!=="all" && p.espace!==filter) return;
     const step=document.createElement("div");
     step.className="step";
     step.innerHTML=`
@@ -292,40 +295,52 @@ function renderTimeline(filter=null){
 }
 renderTimeline();
 
-// Filtrage interactif
-document.querySelectorAll(".legend .box").forEach((box,i)=>{
-  box.parentElement.onclick=()=>{
-    document.querySelectorAll(".legend .box").forEach(b=>b.parentElement.classList.remove("active"));
-    box.parentElement.classList.add("active");
-    const espaceFilter = box.parentElement.textContent.trim();
-    renderTimeline(espaceFilter);
+// ================== Légende interactive ==================
+document.querySelectorAll(".legend span").forEach(el=>{
+  el.onclick=()=>{
+    document.querySelectorAll(".legend span").forEach(s=>s.classList.remove("active"));
+    el.classList.add("active");
+    renderTimeline(el.dataset.filter);
   }
 });
 
 // ================== Animation scroll ==================
 function fadeInSteps(){
   const steps=document.querySelectorAll(".step");
-  steps.forEach((el,i)=>{
-    setTimeout(()=>el.classList.add("visible"), i*150);
-  });
+  steps.forEach((el,i)=>setTimeout(()=>el.classList.add("visible"), i*150));
 }
 
 // ================== Carte Leaflet ==================
 const map=L.map("map").setView([48.914,2.372],14);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
 const latlngs=[];
 points.forEach(p=>{
   latlngs.push(p.coords);
-  L.circleMarker(p.coords,{radius:6,color:"#2563eb",fillOpacity:.9}).addTo(map);
+  L.circleMarker(p.coords,{radius:7,color:"#2563eb",fillColor:"#2563eb",fillOpacity:0.9}).addTo(map)
+  .bindPopup(`<strong>${p.id}. ${p.name}</strong><br>📍 ${p.coords[0]}, ${p.coords[1]}<br>🚶 ${p.rythme}<br>📐 ${p.dim}<br>Intensité ${p.emotion}`);
 });
 L.polyline(latlngs,{color:"#2563eb",weight:4}).addTo(map);
 
 // ================== Graphiques ==================
-new Chart(document.getElementById('altitudeChart'),{type:'line',data:{labels:points.map(p=>p.time),datasets:[{label:'Altitude',data:points.map(p=>p.alt),fill:true,tension:0.3}]}});
-new Chart(document.getElementById('emotionChart'),{type:'line',data:{labels:points.map(p=>p.time),datasets:[{label:'Emotion',data:points.map(p=>p.emotion),fill:true,tension:0.3}]},options:{scales:{y:{min:0,max:5,stepSize:1}}}});
+new Chart(document.getElementById('altitudeChart'),{
+  type:'line',
+  data:{labels:points.map(p=>p.time),datasets:[{label:'Altitude',data:points.map(p=>p.alt),borderColor:'#2563eb',backgroundColor:'rgba(43,108,176,0.2)',fill:true,tension:0.3}]},
+  options:{responsive:true,maintainAspectRatio:false}
+});
+
+new Chart(document.getElementById('emotionChart'),{
+  type:'line',
+  data:{labels:points.map(p=>p.time),datasets:[{label:'Intensité émotionnelle',data:points.map(p=>p.emotion),borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.2)',fill:true,tension:0.4}]},
+  options:{scales:{y:{min:0,max:5,stepSize:1}},responsive:true,maintainAspectRatio:false}
+});
+
 function parseDim(dim){const [x,y]=dim.split('x').map(Number);return {x,y};}
 const dims=points.map(p=>parseDim(p.dim));
-new Chart(document.getElementById('dimensionChart'),{type:'bar',data:{labels:points.map(p=>p.id),datasets:[{label:'Largeur',data:dims.map(d=>d.x)},{label:'Hauteur',data:dims.map(d=>d.y)}]}});
+new Chart(document.getElementById('dimensionChart'),{
+  type:'bar',
+  data:{labels:points.map(p=>p.id),datasets:[{label:'Largeur',data:dims.map(d=>d.x),backgroundColor:'#2563eb'},{label:'Hauteur',data:dims.map(d=>d.y),backgroundColor:'#9333ea'}]},
+  options:{responsive:true,maintainAspectRatio:false}
+});
 </script>
 
 </body>
