@@ -14,12 +14,12 @@
 
 <style>
 :root{
-  --bg:#f5f1ea;
-  --card:#ffffff;
-  --text:#1f2933;
-  --muted:#6b7280;
-  --accent:#2563eb;
-  --border:#e0ded8;
+  --bg:#000000;        /* fond noir */
+  --card:#111111;      /* cartes légèrement plus claires */
+  --text:#ffffff;      /* texte blanc */
+  --muted:#aaaaaa;     /* texte secondaire gris clair */
+  --accent:#2563eb;    /* accent bleu */
+  --border:#333333;    /* bordures des cartes */
   --fade-duration:.8s;
 }
 
@@ -42,7 +42,7 @@ h2{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:2rem}
   max-width:760px;
   margin:2rem auto 3rem;
   font-size:1rem;
-  color:#374151;
+  color:var(--text);
 }
 
 .map{
@@ -72,7 +72,7 @@ h2{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:2rem}
   top:0;
   bottom:0;
   width:3px;
-  background:linear-gradient(to bottom,var(--accent),#bfdbfe);
+  background:linear-gradient(to bottom,var(--accent),#93c5fd);
   border-radius:99px;
 }
 
@@ -100,7 +100,8 @@ h2{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:2rem}
   border:1px solid var(--border);
   border-radius:14px;
   padding:1rem;
-  box-shadow:0 10px 20px rgba(0,0,0,.06);
+  box-shadow:0 10px 20px rgba(0,0,0,.3);
+  color:var(--text);
 }
 
 .photo{
@@ -129,8 +130,8 @@ h2{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:2rem}
 }
 
 .tag{
-  background:#dbeafe;
-  color:#1e3a8a;
+  background:#222;
+  color:#fff;
   padding:.15rem .55rem;
   border-radius:999px;
   font-size:.75rem;
@@ -138,7 +139,7 @@ h2{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:2rem}
   cursor:pointer;
 }
 
-.tag.active{background:#2563eb;color:#fff}
+.tag.active{background:var(--accent);color:#fff}
 
 .intensity{
   font-family:monospace;
@@ -152,7 +153,7 @@ h2{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:2rem}
 
 .description-popup{
   font-size:0.85rem;
-  color:#374151;
+  color:#aaaaaa;
   margin-top:0.4rem;
 }
 
@@ -190,7 +191,7 @@ footer{
   display:inline-block;
   border-radius:3px;
 }
-.legend .active{border:2px solid #000;}
+.legend .active{border:2px solid #fff;}
 </style>
 </head>
 
@@ -211,7 +212,7 @@ L’objectif est de croiser parcours urbain, forme de l’image et expérience v
   <span data-filter="Commercial / Média"><div class="box" style="background:#9333ea"></div> Commercial / Média</span>
   <span data-filter="Vert"><div class="box" style="background:#22c55e"></div> Vert</span>
   <span data-filter="Flux / Résidentiel"><div class="box" style="background:#f59e0b"></div> Flux / Résidentiel</span>
-  <span data-filter="all"><div class="box" style="background:#000000"></div> Tous</span>
+  <span data-filter="all"><div class="box" style="background:#ffffff"></div> Tous</span>
 </div>
 
 <div id="map" class="map"></div>
@@ -280,7 +281,7 @@ const points = [
   {id:"G", name:"CIFA Fashion Business Center", coords:[48.9181,2.3733], img:"IMG_7834.JPG", time:"12:40", alt:0, emotion:4, rythmeVal:3, espace:"Commercial / Média", rythme:"Rapide", dim:"1152x2048", desc:"Pôle de mode et commerce, activité et flux."}
 ];
 
-// ================== Timeline avec description ==================
+// ================== Timeline ==================
 const timeline=document.getElementById("timeline");
 function renderTimeline(filter="all"){
   timeline.innerHTML="";
@@ -311,13 +312,13 @@ function renderTimeline(filter="all"){
 }
 renderTimeline();
 
-// ================== Animation scroll ==================
+// ================== Animation ==================
 function fadeInSteps(){
   const steps=document.querySelectorAll(".step");
   steps.forEach((el,i)=>setTimeout(()=>el.classList.add("visible"), i*150));
 }
 
-// ================== Carte Leaflet ==================
+// ================== Carte ==================
 const map = L.map("map").setView([48.914, 2.372], 14);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
 const latlngs = [];
@@ -328,8 +329,8 @@ points.forEach(p=>{
     <img src="${p.img}" alt="${p.name}" style="width:100px; height:70px; object-fit:cover; border-radius:6px; border:1px solid #ddd;">
     <div style="flex:1;">
       <strong>${p.id}. ${p.name}</strong>
-      <div style="font-size:13px; color:#444;">📍 ${p.coords[0].toFixed(4)}, ${p.coords[1].toFixed(4)}<br>🚶 ${p.rythme} · 📐 ${p.dim} · ❤️ Intensité ${p.emotion}</div>
-      <div style="font-size:13px; margin-top:4px;">${p.desc}</div>
+      <div style="font-size:13px; color:#aaa;">📍 ${p.coords[0].toFixed(4)}, ${p.coords[1].toFixed(4)}<br>🚶 ${p.rythme} · 📐 ${p.dim} · ❤️ Intensité ${p.emotion}</div>
+      <div style="font-size:13px; margin-top:4px; color:#aaa;">${p.desc}</div>
     </div>
   </div>`;
   L.circleMarker(p.coords,{radius:7,color:"#2563eb",fillColor:"#2563eb",fillOpacity:0.9}).addTo(map).bindPopup(popupContent);
@@ -358,7 +359,6 @@ new Chart(document.getElementById('dimensionChart'),{
   options:{responsive:true,maintainAspectRatio:false}
 });
 
-// ======= Nouveau graphique : Rythme de marche =======
 new Chart(document.getElementById('rythmeChart'),{
   type:'bar',
   data:{labels:points.map(p=>p.time),datasets:[{label:'Rythme',data:points.map(p=>p.rythmeVal),backgroundColor:'#22c55e'}]},
