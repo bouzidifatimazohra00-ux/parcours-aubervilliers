@@ -310,16 +310,49 @@ function fadeInSteps(){
   steps.forEach((el,i)=>setTimeout(()=>el.classList.add("visible"), i*150));
 }
 
-// ================== Carte Leaflet ==================
-const map=L.map("map").setView([48.914,2.372],14);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
-const latlngs=[];
-points.forEach(p=>{
+// ================== Carte Leaflet avec popup pro ==================
+const map = L.map("map").setView([48.914, 2.372], 14);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+
+const latlngs = [];
+
+points.forEach(p => {
   latlngs.push(p.coords);
-  L.circleMarker(p.coords,{radius:7,color:"#2563eb",fillColor:"#2563eb",fillOpacity:0.9}).addTo(map)
-  .bindPopup(`<strong>${p.id}. ${p.name}</strong><br>📍 ${p.coords[0]}, ${p.coords[1]}<br>🚶 ${p.rythme}<br>📐 ${p.dim}<br>Intensité ${p.emotion}`);
+
+  // Popup HTML
+  const popupContent = `
+  <div style="display:flex; gap:10px; max-width:250px; font-size:14px; font-family:sans-serif;">
+    <img src="${p.img}" alt="${p.name}" style="width:100px; height:70px; object-fit:cover; border-radius:6px; border:1px solid #ddd;">
+    <div style="flex:1;">
+      <strong>${p.id}. ${p.name}</strong><br/>
+      <div style="margin:4px 0; color:#444; font-size:13px;">
+        📍 ${p.coords[0].toFixed(4)}, ${p.coords[1].toFixed(4)}<br/>
+        🚶 ${p.rythme} · 📐 ${p.dim} · ❤️ Intensité ${p.emotion}
+      </div>
+      <div style="font-size:13px; color:#333; margin-top:4px;">
+        ${p.name === "Quartier ancien" ? "Rue ancienne avec textures et ambiance de proximité." :
+          p.name === "Jardin / espace vert" ? "Pause végétale et respiration au milieu de la ville." :
+          p.name === "Studio 217 – Star Academy" ? "Lieu de production audiovisuelle : univers médiatique." :
+          p.name === "Supermarché proche" ? "Commerce de quartier, activité quotidienne." :
+          p.name === "Humathèque" ? "Bâtiment institutionnel, atmosphère studieuse." :
+          p.name === "CIFA Fashion Business Center" ? "Pôle de mode et commerce, activité et flux." :
+          "Point du parcours."}
+      </div>
+    </div>
+  </div>
+  `;
+
+  L.circleMarker(p.coords, {
+    radius: 7,
+    color: "#2563eb",
+    fillColor: "#2563eb",
+    fillOpacity: 0.9
+  }).addTo(map)
+    .bindPopup(popupContent);
 });
-L.polyline(latlngs,{color:"#2563eb",weight:4}).addTo(map);
+
+L.polyline(latlngs, { color: "#2563eb", weight: 4, opacity: 0.85 }).addTo(map);
+map.fitBounds(latlngs, { padding: [30, 30] });
 
 // ================== Graphiques ==================
 new Chart(document.getElementById('altitudeChart'),{
