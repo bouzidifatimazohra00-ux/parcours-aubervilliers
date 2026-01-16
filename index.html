@@ -5,7 +5,7 @@
 <title>Parcours photo sensible – Aubervilliers</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Leaflet CSS & JS -->
+<!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -29,15 +29,15 @@ h1{font-size:2rem;}
 h2{font-size:1.2rem;color:var(--muted);margin-bottom:2rem;}
 .intro{text-align:center;color:var(--muted);max-width:800px;margin:0 auto 2rem;line-height:1.5;}
 
-/* Layout */
-.layout{display:grid;grid-template-columns:2fr 1fr;gap:2rem;}
-@media(max-width:900px){.layout{grid-template-columns:1fr;}}
-
 /* Carte */
-.map{height:500px;border-radius:12px;border:1px solid var(--border);}
+.map{height:450px;border-radius:12px;border:1px solid var(--border);margin-bottom:2rem;}
+
+/* Layout de la section inférieure */
+.lower-section{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+@media(max-width:900px){.lower-section{grid-template-columns:1fr;}}
 
 /* Timeline */
-.timeline{overflow-y:auto;max-height:500px;}
+.timeline{overflow-y:auto;max-height:600px;}
 .step{background:var(--card);padding:1rem;margin-bottom:1rem;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:0.3s;}
 .step:hover{background:rgba(37,99,235,0.2);}
 .step.active{border:2px solid var(--accent);}
@@ -48,7 +48,7 @@ h2{font-size:1.2rem;color:var(--muted);margin-bottom:2rem;}
 .step .meta{color:var(--muted);font-size:.85rem;margin-top:.3rem;}
 
 /* Graphiques */
-.graphs{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem;}
+.graphs{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
 @media(max-width:900px){.graphs{grid-template-columns:1fr;}}
 .card{background:var(--card);padding:1rem;border-radius:12px;border:1px solid var(--border);}
 .meta{color:var(--muted);font-size:.9rem;margin-top:.5rem;}
@@ -62,36 +62,36 @@ h2{font-size:1.2rem;color:var(--muted);margin-bottom:2rem;}
 Cette visualisation retrace une marche photographique à Aubervilliers. Chaque image est associée à des données spatiales, temporelles et sensibles.
 </div>
 
-<div class="layout">
-  <div>
-    <div id="map" class="map"></div>
-  </div>
-  <div class="timeline" id="timeline"></div>
-</div>
+<!-- Carte en haut -->
+<div id="map" class="map"></div>
 
-<div class="graphs">
-  <div class="card">
-    <h3>Altitude du parcours</h3>
-    <canvas id="altitudeChart"></canvas>
-  </div>
-  <div class="card">
-    <h3>Évolution du ressenti</h3>
-    <canvas id="emotionChart"></canvas>
-  </div>
-  <div class="card">
-    <h3>Formats photographiques</h3>
-    <canvas id="dimensionChart"></canvas>
-  </div>
-  <div class="card">
-    <h3>Conclusion</h3>
-    <p class="meta">
-      Cette balade met en évidence l’influence directe de l’environnement urbain
-      sur le ressenti et la manière de photographier.
-      Les lieux institutionnels et commerciaux génèrent une intensité plus forte,
-      alors que le Jardin, la Star Academy et le Quartier ancien introduisent
-      des pauses et des moments de respiration, tant dans le rythme de marche
-      que dans le regard photographique.
-    </p>
+<!-- Section inférieure : gauche timeline, droite graphiques + conclusion -->
+<div class="lower-section">
+  <div class="timeline" id="timeline"></div>
+  <div class="graphs">
+    <div class="card">
+      <h3>Altitude du parcours</h3>
+      <canvas id="altitudeChart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Évolution du ressenti</h3>
+      <canvas id="emotionChart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Formats photographiques</h3>
+      <canvas id="dimensionChart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Conclusion</h3>
+      <p class="meta">
+        Cette balade met en évidence l’influence directe de l’environnement urbain
+        sur le ressenti et la manière de photographier.
+        Les lieux institutionnels et commerciaux génèrent une intensité plus forte,
+        alors que le Jardin, la Star Academy et le Quartier ancien introduisent
+        des pauses et des moments de respiration, tant dans le rythme de marche
+        que dans le regard photographique.
+      </p>
+    </div>
   </div>
 </div>
 
