@@ -4,177 +4,197 @@
 <meta charset="UTF-8">
 <title>Parcours photographique sensible – Aubervilliers</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Leaflet CSS & JS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 :root{
-    --bg:#000000; 
-    --card:#111111; 
-    --text:#ffffff; 
-    --muted:#aaaaaa; 
-    --accent:#2563eb;
-    --border:#333333;
-    --fade-duration:.8s;
+  --bg:#f5f1ea;
+  --card:#ffffff;
+  --text:#1f2933;
+  --muted:#6b7280;
+  --accent:#2563eb;
+  --border:#e0ded8;
 }
+
 *{box-sizing:border-box;margin:0;padding:0}
+
 body{
-    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    line-height:1.6;
-    padding:2rem 1rem 4rem;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  padding:2rem 1rem 4rem;
 }
-.page{max-width:1200px;margin:0 auto}
-h1{text-align:center;font-size:2rem;margin-bottom:.3rem;}
-h2{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:2rem;}
+
+.page{max-width:1100px;margin:0 auto}
+
+h1{text-align:center;font-size:2rem}
+h2{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:2rem}
+
 .intro{
-    max-width:760px;
-    margin:1.5rem auto 3rem;
-    font-size:1rem;
-    color:#cccccc;
-    text-align:center;
+  max-width:760px;
+  margin:2rem auto 3rem;
+  font-size:1rem;
+  color:#374151;
 }
+
 .map{
-    height:400px;
-    border-radius:16px;
-    overflow:hidden;
-    border:1px solid var(--border);
-    margin-bottom:2.5rem;
+  height:360px;
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  margin-bottom:2.5rem;
 }
+
 .layout{
-    display:grid;
-    grid-template-columns:2fr 1fr;
-    gap:2.5rem;
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:2.5rem;
 }
-@media(max-width:900px){ .layout{grid-template-columns:1fr} }
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+}
+
 .timeline{position:relative;padding-left:2.2rem}
 .timeline::before{
-    content:"";
-    position:absolute;
-    left:1rem;
-    top:0;
-    bottom:0;
-    width:3px;
-    background:linear-gradient(to bottom,var(--accent),#93c5fd);
-    border-radius:99px;
+  content:"";
+  position:absolute;
+  left:1rem;
+  top:0;
+  bottom:0;
+  width:3px;
+  background:linear-gradient(to bottom,var(--accent),#bfdbfe);
+  border-radius:99px;
 }
-.step{
-    margin-bottom:2rem;
-    position:relative;
-    opacity:0;
-    transform:translateY(15px);
-    transition:opacity var(--fade-duration),transform var(--fade-duration);
-    cursor:pointer;
-    border-left:3px solid transparent;
-}
-.step.visible{opacity:1;transform:translateY(0);}
-.step.active{border-left:3px solid var(--accent); background:rgba(37,99,235,0.1); border-radius:6px;}
+
+.step{margin-bottom:2rem;position:relative}
 .marker{
-    position:absolute;
-    left:-0.1rem;
-    top:0.4rem;
-    width:1.4rem;
-    height:1.4rem;
-    border-radius:50%;
-    background:var(--bg);
-    border:3px solid var(--accent);
-    font-size:.75rem;
-    font-weight:700;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  position:absolute;
+  left:-0.1rem;
+  top:0.4rem;
+  width:1.4rem;
+  height:1.4rem;
+  border-radius:50%;
+  background:var(--bg);
+  border:3px solid var(--accent);
+  font-size:.75rem;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
+
 .card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:1rem;
-    box-shadow:0 10px 20px rgba(0,0,0,.6);
-    color:var(--text);
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:1rem;
+  box-shadow:0 10px 20px rgba(0,0,0,.06);
 }
+
 .photo{
-    display:grid;
-    grid-template-columns:160px 1fr;
-    gap:1rem;
-    margin-top:.5rem;
+  display:grid;
+  grid-template-columns:160px 1fr;
+  gap:1rem;
+  margin-top:.5rem;
 }
+
 .photo img{
-    width:100%;
-    border-radius:10px;
-    object-fit:cover;
-    cursor:pointer;
+  width:100%;
+  border-radius:10px;
+  object-fit:cover;
 }
-@media(max-width:600px){ .photo{grid-template-columns:1fr} }
-.tags{ display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.4rem; }
-.tag{ background:#1f2933; color:#fff; padding:.15rem .55rem; border-radius:999px; font-size:.75rem; font-weight:500; }
-.tag.active{background:var(--accent); color:#fff}
-.intensity{ font-family:monospace; font-size:.75rem; }
-.meta{ font-size:.82rem; color:var(--muted); }
-.side{ display:flex; flex-direction:column; gap:1.5rem; }
+
+@media(max-width:600px){
+  .photo{grid-template-columns:1fr}
+}
+
+.tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.4rem;
+  margin-bottom:.4rem;
+}
+
+.tag{
+  background:#dbeafe;
+  color:#1e3a8a;
+  padding:.15rem .55rem;
+  border-radius:999px;
+  font-size:.75rem;
+  font-weight:500;
+}
+
+.intensity{
+  font-family:monospace;
+  font-size:.75rem;
+}
+
+.meta{
+  font-size:.82rem;
+  color:var(--muted);
+}
+
+.side{
+  display:flex;
+  flex-direction:column;
+  gap:1.5rem;
+}
+
 canvas{max-height:240px}
-footer{ text-align:center; font-size:.75rem; color:var(--muted); margin-top:3rem; }
-.legend{ display:flex; flex-wrap:wrap; gap:1rem; font-size:.8rem; margin-bottom:1rem; justify-content:center; }
-.legend span{ display:inline-flex; align-items:center; gap:.3rem; cursor:pointer; }
-.legend .box{ width:12px; height:12px; display:inline-block; border-radius:3px; border:1px solid #555; }
-.legend .active{border:2px solid #000;}
-.description-popup{
-    display:none;
-    margin-top:0.5rem;
-    padding:0.5rem;
-    background:#222;
-    border-radius:6px;
-    font-size:0.85rem;
+
+footer{
+  text-align:center;
+  font-size:.75rem;
+  color:var(--muted);
+  margin-top:3rem;
 }
 </style>
 </head>
+
 <body>
 <main class="page">
+
 <h1>Parcours photographique sensible – Aubervilliers</h1>
 <h2>Marche urbaine, données et ressentis</h2>
-<div class="intro">
-Cette visualisation retrace une marche photographique à Aubervilliers. Chaque image est associée à des données spatiales, temporelles et sensibles. L’objectif est de croiser parcours urbain, forme de l’image et expérience vécue.
-</div>
 
-<div class="legend">
-<span data-filter="Institutionnel"><div class="box" style="background:#3b82f6"></div> Institutionnel</span>
-<span data-filter="Commercial / Média"><div class="box" style="background:#9333ea"></div> Commercial / Média</span>
-<span data-filter="Vert"><div class="box" style="background:#22c55e"></div> Vert</span>
-<span data-filter="Flux / Résidentiel"><div class="box" style="background:#f59e0b"></div> Flux / Résidentiel</span>
-<span data-filter="all"><div class="box" style="background:#000000"></div> Tous</span>
+<div class="intro">
+Cette visualisation retrace une marche photographique à Aubervilliers.
+Chaque image est associée à des données spatiales, temporelles et sensibles.
+L’objectif est de croiser parcours urbain, forme de l’image et expérience vécue.
 </div>
 
 <div id="map" class="map"></div>
 
 <section class="layout">
 <div class="timeline" id="timeline"></div>
+
 <aside class="side">
+
 <div class="card">
 <h3>Altitude du parcours</h3>
 <canvas id="altitudeChart"></canvas>
 </div>
+
 <div class="card">
-<h3>Évolution du ressenti</h3>
-<canvas id="emotionChart"></canvas>
-<p class="meta">
-Le ressenti émotionnel évolue au fil du parcours, alternant entre intensité urbaine et moments de pause.
-</p>
+<h3>Analyse sensible</h3>
+<canvas id="radarChart"></canvas>
 </div>
+
 <div class="card">
 <h3>Formats photographiques</h3>
 <canvas id="dimensionChart"></canvas>
 <p class="meta">
-Les formats varient selon les espaces traversés : les lieux ouverts favorisent des cadrages plus respirants, tandis que les zones denses contraignent la prise de vue.
+Les formats varient selon les espaces traversés :
+les lieux ouverts favorisent des cadrages plus respirants,
+tandis que les zones denses contraignent la prise de vue.
 </p>
 </div>
-<div class="card" style="margin-top:2rem;max-width:760px;margin-inline:auto;">
-<h3>Conclusion</h3>
-<p class="meta">
-Cette balade met en évidence l’influence directe de l’environnement urbain sur le ressenti et la manière de photographier. Les lieux institutionnels et commerciaux génèrent une intensité plus forte, alors que le Jardin, la Star Academy et le Quartier ancien introduisent des pauses et des moments de respiration, tant dans le rythme de marche que dans le regard photographique.
-</p>
-</div>
+
 </aside>
 </section>
 
@@ -182,138 +202,68 @@ Cette balade met en évidence l’influence directe de l’environnement urbain 
 </main>
 
 <script>
-// ================== Données ==================
 const points = [
-{id:"A", name:"Humathèque", coords:[48.9129,2.3658], img:"image0 (1).jpeg", time:"11:00", alt:0, emotion:1, espace:"Institutionnel", rythme:"Lent", dim:"1152x2048"},
-{id:"B", name:"Supermarché proche", coords:[48.9131,2.3662], img:"IMG_7841.JPG", time:"11:10", alt:0, emotion:2, espace:"Commercial / Média", rythme:"Rapide", dim:"1152x2048"},
-{id:"C", name:"Passage piéton", coords:[48.9134,2.3668], img:"IMG_7840(2).JPG", time:"11:20", alt:0, emotion:3, espace:"Flux / Résidentiel", rythme:"Rapide", dim:"1152x2048"},
-{id:"D", name:"Studio 217 – Star Academy", coords:[48.9192,2.3751], img:"IMG_7836.JPG", time:"11:50", alt:0, emotion:5, espace:"Commercial / Média", rythme:"Pause", dim:"1152x2048"},
-{id:"E", name:"Jardin / espace vert", coords:[48.9172,2.3728], img:"IMG_7835.JPG", time:"12:05", alt:0, emotion:1, espace:"Vert", rythme:"Pause", dim:"1152x2048"},
-{id:"F", name:"Quartier ancien", coords:[48.9121,2.3821], img:"IMG_6981.jpg", time:"12:25", alt:0, emotion:2, espace:"Flux / Résidentiel", rythme:"Pause", dim:"1536x2048"},
-{id:"G", name:"CIFA Fashion Business Center", coords:[48.9181,2.3733], img:"IMG_7834.JPG", time:"12:40", alt:0, emotion:4, espace:"Commercial / Média", rythme:"Rapide", dim:"1152x2048"}
+{id:"A",name:"Humathèque",coords:[48.9129,2.3658],img:"image0 (1).jpeg",time:"11:00",alt:0,emotion:1,espace:"Institutionnel",dim:"1152x2048"},
+{id:"B",name:"Supermarché",coords:[48.9131,2.3662],img:"IMG_7841.JPG",time:"11:10",alt:0,emotion:2,espace:"Commercial",dim:"1152x2048"},
+{id:"C",name:"Passage piéton",coords:[48.9134,2.3668],img:"IMG_7840(2).JPG",time:"11:20",alt:0,emotion:3,espace:"Flux",dim:"1152x2048"},
+{id:"D",name:"Métro Front Populaire",coords:[48.9149,2.3695],img:"IMG_7839.JPG",time:"11:35",alt:0,emotion:4,espace:"Mobilité",dim:"1152x2048"},
+{id:"E",name:"Studio 217",coords:[48.9192,2.3751],img:"IMG_7836.JPG",time:"11:50",alt:0,emotion:5,espace:"Média",dim:"1152x2048"},
+{id:"F",name:"Jardin",coords:[48.9172,2.3728],img:"IMG_7835.JPG",time:"12:05",alt:0,emotion:1,espace:"Vert",dim:"1152x2048"},
+{id:"G",name:"Quartier ancien",coords:[48.9121,2.3821],img:"IMG_6981.jpg",time:"12:25",alt:0,emotion:2,espace:"Résidentiel",dim:"1536x2048"},
+{id:"H",name:"CIFA",coords:[48.9181,2.3733],img:"IMG_7834.JPG",time:"12:40",alt:0,emotion:4,espace:"Commercial",dim:"1152x2048"}
 ];
 
-// ================== Timeline filtrable ==================
 const timeline=document.getElementById("timeline");
-let currentStep=null;
+timeline.innerHTML=points.map(p=>`
+<div class="step">
+<div class="marker">${p.id}</div>
+<div class="card">
+<strong>${p.time} – ${p.name}</strong>
+<div class="photo">
+<img src="${p.img}">
+<div>
+<div class="tags">
+<span class="tag">${p.espace}</span>
+<span class="tag intensity">Intensité ${"█".repeat(p.emotion)}${"░".repeat(5-p.emotion)}</span>
+</div>
+<div class="meta">📍 ${p.coords[0]}, ${p.coords[1]} · 📐 ${p.dim}</div>
+</div>
+</div>
+</div>
+</div>
+`).join("");
 
-function renderTimeline(filter="all"){
-    timeline.innerHTML="";
-    points.forEach((p,i)=>{
-        if(filter!=="all" && p.espace!==filter) return;
-        const step=document.createElement("div");
-        step.className="step";
-        step.dataset.id = p.id;
-        step.innerHTML=`
-            <div class="marker">${p.id}</div>
-            <div class="card">
-                <strong>${p.time} – ${p.name}</strong>
-                <div class="photo">
-                    <img src="${p.img}" alt="${p.name}">
-                    <div>
-                        <div class="tags">
-                            <span class="tag">${p.espace}</span>
-                            <span class="tag intensity">Intensité ${"█".repeat(p.emotion)}${"░".repeat(5-p.emotion)}</span>
-                            <span class="tag">🚶 ${p.rythme}</span>
-                        </div>
-                        <div class="meta">📍 ${p.coords[0]}, ${p.coords[1]} · 📐 ${p.dim}</div>
-                        <div class="description-popup">
-                            <strong>Description :</strong> ${p.name}<br>
-                            <strong>Sentiment / Intensité :</strong> ${p.emotion}/5
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        const imgEl = step.querySelector("img");
-        const popupEl = step.querySelector(".description-popup");
-        imgEl.onclick = () => {
-            popupEl.style.display = popupEl.style.display === "none" ? "block" : "none";
-        };
-        step.onclick=()=>focusStep(p.id);
-        timeline.appendChild(step);
-    });
-    fadeInSteps();
-}
-
-function fadeInSteps(){
-    const steps=document.querySelectorAll(".step");
-    steps.forEach((el,i)=>setTimeout(()=>el.classList.add("visible"), i*150));
-}
-
-function focusStep(id){
-    if(currentStep) currentStep.classList.remove("active");
-    const step=document.querySelector(`.step[data-id='${id}']`);
-    if(step){
-        step.classList.add("active");
-        step.scrollIntoView({behavior:"smooth",block:"center"});
-        currentStep=step;
-    }
-}
-
-// ================== Légende interactive ==================
-document.querySelectorAll(".legend span").forEach(el=>{
-    el.onclick=()=>{
-        document.querySelectorAll(".legend span").forEach(s=>s.classList.remove("active"));
-        el.classList.add("active");
-        renderTimeline(el.dataset.filter);
-    }
-});
-
-// ================== Carte Leaflet ==================
-const map = L.map("map").setView([48.914, 2.372], 14);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
-
-const latlngs = [];
+const map=L.map("map").setView([48.914,2.372],14);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+const latlngs=[];
 points.forEach(p=>{
-    latlngs.push(p.coords);
-    const popupContent = `
-    <div style="display:flex; gap:10px; max-width:250px; font-size:14px; font-family:sans-serif;">
-        <img src="${p.img}" alt="${p.name}" style="width:100px; height:70px; object-fit:cover; border-radius:6px; border:1px solid #ddd;">
-        <div style="flex:1; color:#fff;">
-            <strong>${p.id}. ${p.name}</strong><br/>
-            <div style="margin:4px 0; color:#ccc; font-size:13px;">
-                📍 ${p.coords[0].toFixed(4)}, ${p.coords[1].toFixed(4)}<br/>
-                🚶 ${p.rythme} · 📐 ${p.dim} · ❤️ Intensité ${p.emotion}
-            </div>
-        </div>
-    </div>`;
-    const marker = L.marker(p.coords).addTo(map).bindPopup(popupContent);
-    marker.on('click',()=>focusStep(p.id));
+latlngs.push(p.coords);
+L.circleMarker(p.coords,{radius:6,color:"#2563eb",fillOpacity:.9}).addTo(map);
 });
-const polyline = L.polyline(latlngs, { color: '#2563eb', weight: 4, opacity: 0.7 }).addTo(map);
-map.fitBounds(polyline.getBounds());
+L.polyline(latlngs,{color:"#2563eb",weight:4}).addTo(map);
 
-// ================== Graphiques ==================
-new Chart(document.getElementById('altitudeChart'), {
-    type: 'line',
-    data: {
-        labels: points.map(p=>p.name),
-        datasets:[{label:'Altitude',data:points.map(p=>p.alt),borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.2)',tension:0.3,fill:true}]
-    },
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+new Chart(altitudeChart,{
+type:"line",
+data:{labels:points.map(p=>p.time),
+datasets:[{data:points.map(p=>p.alt),fill:true}]}
 });
 
-new Chart(document.getElementById('emotionChart'), {
-    type:'line',
-    data:{labels:points.map(p=>p.name),datasets:[{label:'Émotion',data:points.map(p=>p.emotion),borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.2)',tension:0.3,fill:true}]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{min:0,max:5,stepSize:1}}}
+new Chart(radarChart,{
+type:"radar",
+data:{labels:["Densité","Ouverture","Calme","Activité"],
+datasets:[{data:[4,2,3,5]}]}
 });
 
-new Chart(document.getElementById('dimensionChart'), {
-    type:'bar',
-    data:{
-        labels:points.map(p=>p.name),
-        datasets:[
-            {label:'Largeur (px)',data:points.map(p=>parseInt(p.dim.split('x')[0])),backgroundColor:'#22c55e'},
-            {label:'Hauteur (px)',data:points.map(p=>parseInt(p.dim.split('x')[1])),backgroundColor:'#9333ea'}
-        ]
-    },
-    options:{responsive:true,plugins:{legend:{position:'top'}}}
+function parseDim(d){const[x,y]=d.split("x").map(Number);return{x,y}}
+const dims=points.map(p=>parseDim(p.dim));
+new Chart(dimensionChart,{
+type:"bar",
+data:{labels:points.map(p=>p.id),
+datasets:[
+{label:"Largeur",data:dims.map(d=>d.x)},
+{label:"Hauteur",data:dims.map(d=>d.y)}
+]}
 });
-
-// Initial render
-renderTimeline();
 </script>
 </body>
 </html>
