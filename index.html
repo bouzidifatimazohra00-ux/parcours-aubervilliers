@@ -5,7 +5,7 @@
 <title>Parcours photo sensible – Aubervilliers</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Leaflet -->
+<!-- Leaflet CSS & JS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -23,76 +23,77 @@
 }
 
 /* Global */
-body, html{margin:0;padding:0;font-family:system-ui;background:var(--bg);color:var(--text);height:100%;overflow-y:scroll;scroll-behavior:smooth;}
-main{height:100%;scroll-snap-type:y mandatory;overflow-y:scroll;}
-section{height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;padding:2rem;box-sizing:border-box;}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text);padding:2rem;}
+h1,h2{text-align:center;margin-bottom:1rem;}
+h1{font-size:2rem;}
+h2{font-size:1.2rem;color:var(--muted);margin-bottom:2rem;}
+.intro{text-align:center;color:var(--muted);max-width:800px;margin:0 auto 2rem;line-height:1.5;}
 
-/* Section 1 – Carte + Timeline */
-#section1 h1{text-align:center;margin-bottom:1rem;}
-.map{height:50%;border-radius:12px;border:1px solid var(--border);margin-bottom:1rem;}
-.timeline{display:flex;overflow-x:auto;gap:1rem;padding:1rem 0;scroll-behavior:smooth;}
-.step{min-width:220px;flex-shrink:0;background:var(--card);padding:.5rem;border-radius:10px;cursor:pointer;opacity:0;transform:translateY(15px);transition:all .8s;}
-.step.visible{opacity:1;transform:translateY(0);}
-.step.active{border:2px solid var(--accent);background:rgba(37,99,235,0.2);}
+/* Layout */
+.layout{display:grid;grid-template-columns:2fr 1fr;gap:2rem;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+
+/* Carte */
+.map{height:500px;border-radius:12px;border:1px solid var(--border);}
+
+/* Timeline */
+.timeline{overflow-y:auto;max-height:500px;}
+.step{background:var(--card);padding:1rem;margin-bottom:1rem;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:0.3s;}
+.step:hover{background:rgba(37,99,235,0.2);}
+.step.active{border:2px solid var(--accent);}
 .step img{width:100%;border-radius:6px;margin-top:.5rem;}
-.step .tags{margin-top:.3rem;display:flex;gap:.3rem;flex-wrap:wrap;}
+.step .tags{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.5rem;}
 .step .tag{background:#2563eb;color:#fff;padding:.2rem .5rem;border-radius:999px;font-size:.75rem;}
 .step .tag.intensity{background:#9333ea;}
-.step .meta{font-size:.8rem;color:var(--muted);margin-top:.3rem;}
+.step .meta{color:var(--muted);font-size:.85rem;margin-top:.3rem;}
 
-/* Section 2 – Graphiques + Conclusion */
-#section2 h2{text-align:center;margin-bottom:1rem;}
-.graphs{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+/* Graphiques */
+.graphs{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem;}
 @media(max-width:900px){.graphs{grid-template-columns:1fr;}}
 .card{background:var(--card);padding:1rem;border-radius:12px;border:1px solid var(--border);}
 .meta{color:var(--muted);font-size:.9rem;margin-top:.5rem;}
-
-/* Navigation hints */
-.scroll-hint{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);color:#bbb;font-size:.9rem;}
 </style>
 </head>
-
 <body>
-<main>
 
-<!-- Section 1 -->
-<section id="section1">
-  <h1>Parcours photographique – Aubervilliers</h1>
-  <div id="map" class="map"></div>
-  <div class="timeline" id="timeline"></div>
-  <div class="scroll-hint">⬇️ Faites défiler pour voir les graphiques et la conclusion</div>
-</section>
+<h1>Parcours photographique sensible – Aubervilliers</h1>
+<h2>Marche urbaine, données et ressentis</h2>
+<div class="intro">
+Cette visualisation retrace une marche photographique à Aubervilliers. Chaque image est associée à des données spatiales, temporelles et sensibles.
+</div>
 
-<!-- Section 2 -->
-<section id="section2">
-  <h2>Graphiques et Conclusion</h2>
-  <div class="graphs">
-    <div class="card">
-      <h3>Altitude du parcours</h3>
-      <canvas id="altitudeChart"></canvas>
-    </div>
-    <div class="card">
-      <h3>Évolution du ressenti</h3>
-      <canvas id="emotionChart"></canvas>
-    </div>
-    <div class="card">
-      <h3>Formats photographiques</h3>
-      <canvas id="dimensionChart"></canvas>
-    </div>
-    <div class="card">
-      <h3>Conclusion</h3>
-      <p class="meta">
-        Cette balade met en évidence l’influence directe de l’environnement urbain
-        sur le ressenti et la manière de photographier.
-        Les lieux institutionnels et commerciaux génèrent une intensité plus forte,
-        alors que le Jardin, la Star Academy et le Quartier ancien introduisent
-        des pauses et des moments de respiration, tant dans le rythme de marche
-        que dans le regard photographique.
-      </p>
-    </div>
+<div class="layout">
+  <div>
+    <div id="map" class="map"></div>
   </div>
-</section>
-</main>
+  <div class="timeline" id="timeline"></div>
+</div>
+
+<div class="graphs">
+  <div class="card">
+    <h3>Altitude du parcours</h3>
+    <canvas id="altitudeChart"></canvas>
+  </div>
+  <div class="card">
+    <h3>Évolution du ressenti</h3>
+    <canvas id="emotionChart"></canvas>
+  </div>
+  <div class="card">
+    <h3>Formats photographiques</h3>
+    <canvas id="dimensionChart"></canvas>
+  </div>
+  <div class="card">
+    <h3>Conclusion</h3>
+    <p class="meta">
+      Cette balade met en évidence l’influence directe de l’environnement urbain
+      sur le ressenti et la manière de photographier.
+      Les lieux institutionnels et commerciaux génèrent une intensité plus forte,
+      alors que le Jardin, la Star Academy et le Quartier ancien introduisent
+      des pauses et des moments de respiration, tant dans le rythme de marche
+      que dans le regard photographique.
+    </p>
+  </div>
+</div>
 
 <script>
 // ================== Données ==================
@@ -120,18 +121,12 @@ function renderTimeline(){
     step.onclick=()=>focusStep(p.id);
     timeline.appendChild(step);
   });
-  fadeInSteps();
-}
-
-function fadeInSteps(){
-  const steps=document.querySelectorAll(".step");
-  steps.forEach((el,i)=>setTimeout(()=>el.classList.add("visible"),i*150));
 }
 
 function focusStep(id){
   if(currentStep) currentStep.classList.remove("active");
   const step=document.querySelector(`.step[data-id='${id}']`);
-  if(step){step.classList.add("active");step.scrollIntoView({behavior:"smooth",inline:"center"});currentStep=step;}
+  if(step){step.classList.add("active");step.scrollIntoView({behavior:"smooth",block:"center"});currentStep=step;}
 }
 
 // ================== Carte Leaflet ==================
