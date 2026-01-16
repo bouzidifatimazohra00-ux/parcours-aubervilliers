@@ -2,10 +2,10 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Parcours photographique sensible – Aubervilliers</title>
+<title>Parcours photo sensible – Aubervilliers</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Leaflet CSS & JS -->
+<!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -14,212 +14,109 @@
 
 <style>
 :root{
-  --bg:#111111;
+  --bg:#111;
   --card:#1e1e1e;
   --text:#f5f5f5;
-  --muted:#bbbbbb;
+  --muted:#bbb;
   --accent:#2563eb;
-  --border:#333333;
-  --fade-duration:.8s;
+  --border:#333;
 }
 
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+/* Global */
+body, html{margin:0;padding:0;font-family:system-ui;background:var(--bg);color:var(--text);height:100%;overflow-y:scroll;scroll-behavior:smooth;}
+main{height:100%;scroll-snap-type:y mandatory;overflow-y:scroll;}
+section{height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;padding:2rem;box-sizing:border-box;}
 
-body{
-  background:var(--bg);
-  color:var(--text);
-  line-height:1.6;
-  padding:2rem 1rem 4rem;
-}
-
-.page{max-width:1200px;margin:0 auto;}
-
-h1{text-align:center;font-size:2rem;margin-bottom:.3rem;}
-h2{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:2rem;}
-
-.intro{
-  max-width:760px;
-  margin:1.5rem auto 3rem;
-  font-size:1rem;
-  color:var(--muted);
-  text-align:center;
-}
-
-.map{
-  height:450px;
-  border-radius:16px;
-  overflow:hidden;
-  border:1px solid var(--border);
-  margin-bottom:1.5rem;
-}
-
-/* Timeline horizontale */
-.timeline{
-  display:flex;
-  overflow-x:auto;
-  gap:1rem;
-  padding:1rem 0;
-  scroll-behavior: smooth;
-}
-
-.step{
-  min-width:200px;
-  flex-shrink:0;
-  border:2px solid transparent;
-  border-radius:10px;
-  background:var(--card);
-  padding:.5rem;
-  cursor:pointer;
-  opacity:0;
-  transform:translateY(15px);
-  transition:opacity var(--fade-duration),transform var(--fade-duration),border 0.3s, background 0.3s;
-}
-
+/* Section 1 – Carte + Timeline */
+#section1 h1{text-align:center;margin-bottom:1rem;}
+.map{height:50%;border-radius:12px;border:1px solid var(--border);margin-bottom:1rem;}
+.timeline{display:flex;overflow-x:auto;gap:1rem;padding:1rem 0;scroll-behavior:smooth;}
+.step{min-width:220px;flex-shrink:0;background:var(--card);padding:.5rem;border-radius:10px;cursor:pointer;opacity:0;transform:translateY(15px);transition:all .8s;}
 .step.visible{opacity:1;transform:translateY(0);}
-.step.active{border-color:var(--accent); background:rgba(37,99,235,0.2);}
+.step.active{border:2px solid var(--accent);background:rgba(37,99,235,0.2);}
+.step img{width:100%;border-radius:6px;margin-top:.5rem;}
+.step .tags{margin-top:.3rem;display:flex;gap:.3rem;flex-wrap:wrap;}
+.step .tag{background:#2563eb;color:#fff;padding:.2rem .5rem;border-radius:999px;font-size:.75rem;}
+.step .tag.intensity{background:#9333ea;}
+.step .meta{font-size:.8rem;color:var(--muted);margin-top:.3rem;}
 
-.step .marker{
-  display:none;
-}
+/* Section 2 – Graphiques + Conclusion */
+#section2 h2{text-align:center;margin-bottom:1rem;}
+.graphs{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+@media(max-width:900px){.graphs{grid-template-columns:1fr;}}
+.card{background:var(--card);padding:1rem;border-radius:12px;border:1px solid var(--border);}
+.meta{color:var(--muted);font-size:.9rem;margin-top:.5rem;}
 
-.step strong{display:block;margin-bottom:.3rem;}
-.photo{display:grid;grid-template-columns:1fr;gap:.5rem;}
-.photo img{width:100%;border-radius:8px;object-fit:cover;}
-.tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.3rem;}
-.tag{background:#2563eb;color:#fff;padding:.15rem .5rem;border-radius:999px;font-size:.75rem;font-weight:500;}
-.tag.intensity{background:#9333ea;}
-
-.graphs{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:1.5rem;
-  margin-top:2rem;
-}
-
-@media(max-width:900px){
-  .graphs{grid-template-columns:1fr;}
-}
-
-.card{
-  background:var(--card);
-  padding:1rem;
-  border-radius:12px;
-  border:1px solid var(--border);
-}
-
-.meta{font-size:.8rem;color:var(--muted);margin-top:.3rem;}
-
-footer{text-align:center;color:var(--muted);margin-top:3rem;font-size:.75rem;}
-
-.legend{
-  display:flex;
-  flex-wrap:wrap;
-  gap:1rem;
-  font-size:.8rem;
-  justify-content:center;
-  margin-bottom:1rem;
-}
-.legend span{
-  display:inline-flex;
-  align-items:center;
-  gap:.3rem;
-  cursor:pointer;
-}
-.legend .box{
-  width:12px;
-  height:12px;
-  display:inline-block;
-  border-radius:3px;
-  border:1px solid #fff;
-}
-.legend .active{border:2px solid #fff;}
+/* Navigation hints */
+.scroll-hint{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);color:#bbb;font-size:.9rem;}
 </style>
 </head>
 
 <body>
-<main class="page">
+<main>
 
-<h1>Parcours photographique sensible – Aubervilliers</h1>
-<h2>Marche urbaine, données et ressentis</h2>
+<!-- Section 1 -->
+<section id="section1">
+  <h1>Parcours photographique – Aubervilliers</h1>
+  <div id="map" class="map"></div>
+  <div class="timeline" id="timeline"></div>
+  <div class="scroll-hint">⬇️ Faites défiler pour voir les graphiques et la conclusion</div>
+</section>
 
-<div class="intro">
-Cette visualisation retrace une marche photographique à Aubervilliers.
-Chaque image est associée à des données spatiales, temporelles et sensibles.
-</div>
-
-<div class="legend">
-  <span data-filter="Institutionnel"><div class="box" style="background:#3b82f6"></div> Institutionnel</span>
-  <span data-filter="Commercial / Média"><div class="box" style="background:#9333ea"></div> Commercial / Média</span>
-  <span data-filter="Vert"><div class="box" style="background:#22c55e"></div> Vert</span>
-  <span data-filter="Flux / Résidentiel"><div class="box" style="background:#f59e0b"></div> Flux / Résidentiel</span>
-  <span data-filter="all"><div class="box" style="background:#ffffff"></div> Tous</span>
-</div>
-
-<div id="map" class="map"></div>
-
-<div class="timeline" id="timeline"></div>
-
-<div class="graphs">
-  <div class="card">
-    <h3>Altitude du parcours</h3>
-    <canvas id="altitudeChart"></canvas>
+<!-- Section 2 -->
+<section id="section2">
+  <h2>Graphiques et Conclusion</h2>
+  <div class="graphs">
+    <div class="card">
+      <h3>Altitude du parcours</h3>
+      <canvas id="altitudeChart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Évolution du ressenti</h3>
+      <canvas id="emotionChart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Formats photographiques</h3>
+      <canvas id="dimensionChart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Conclusion</h3>
+      <p class="meta">
+        Cette balade met en évidence l’influence directe de l’environnement urbain
+        sur le ressenti et la manière de photographier.
+        Les lieux institutionnels et commerciaux génèrent une intensité plus forte,
+        alors que le Jardin, la Star Academy et le Quartier ancien introduisent
+        des pauses et des moments de respiration, tant dans le rythme de marche
+        que dans le regard photographique.
+      </p>
+    </div>
   </div>
-  <div class="card">
-    <h3>Évolution du ressenti</h3>
-    <canvas id="emotionChart"></canvas>
-    <p class="meta">
-      Le ressenti émotionnel évolue au fil du parcours, alternant entre intensité urbaine et moments de pause.
-    </p>
-  </div>
-  <div class="card">
-    <h3>Formats photographiques</h3>
-    <canvas id="dimensionChart"></canvas>
-    <p class="meta">
-      Les formats varient selon les espaces traversés : les lieux ouverts favorisent des cadrages plus respirants, tandis que les zones denses contraignent la prise de vue.
-    </p>
-  </div>
-  <div class="card">
-    <h3>Conclusion</h3>
-    <p class="meta">
-      Cette balade met en évidence l’influence directe de l’environnement urbain sur le ressenti et la manière de photographier.
-    </p>
-  </div>
-</div>
-
-<footer>Projet de visualisation – Master</footer>
+</section>
 </main>
 
 <script>
 // ================== Données ==================
 const points = [
-  {id:"A", name:"Humathèque", coords:[48.9129,2.3658], img:"image0 (1).jpeg", time:"11:00", alt:0, emotion:1, espace:"Institutionnel", rythme:"Lent", dim:"1152x2048"},
-  {id:"B", name:"Supermarché proche", coords:[48.9131,2.3662], img:"IMG_7841.JPG", time:"11:10", alt:0, emotion:2, espace:"Commercial / Média", rythme:"Rapide", dim:"1152x2048"},
-  {id:"C", name:"Passage piéton", coords:[48.9134,2.3668], img:"IMG_7840(2).JPG", time:"11:20", alt:0, emotion:3, espace:"Flux / Résidentiel", rythme:"Rapide", dim:"1152x2048"},
-  {id:"D", name:"Studio 217 – Star Academy", coords:[48.9192,2.3751], img:"IMG_7836.JPG", time:"11:50", alt:0, emotion:5, espace:"Commercial / Média", rythme:"Pause", dim:"1152x2048"},
-  {id:"E", name:"Jardin / espace vert", coords:[48.9172,2.3728], img:"IMG_7835.JPG", time:"12:05", alt:0, emotion:1, espace:"Vert", rythme:"Pause", dim:"1152x2048"},
-  {id:"F", name:"Quartier ancien", coords:[48.9121,2.3821], img:"IMG_6981.jpg", time:"12:25", alt:0, emotion:2, espace:"Flux / Résidentiel", rythme:"Pause", dim:"1536x2048"},
-  {id:"G", name:"CIFA Fashion Business Center", coords:[48.9181,2.3733], img:"IMG_7834.JPG", time:"12:40", alt:0, emotion:4, espace:"Commercial / Média", rythme:"Rapide", dim:"1152x2048"}
+  {id:"A", name:"Humathèque", coords:[48.9129,2.3658], img:"image0 (1).jpeg", alt:0, emotion:1, dim:"1152x2048", espace:"Institutionnel", desc:"Bibliothèque et lieu institutionnel."},
+  {id:"B", name:"Supermarché proche", coords:[48.9131,2.3662], img:"IMG_7841.JPG", alt:0, emotion:2, dim:"1152x2048", espace:"Commercial / Média", desc:"Zone commerciale et flux important."},
+  {id:"C", name:"Passage piéton", coords:[48.9134,2.3668], img:"IMG_7840(2).JPG", alt:0, emotion:3, dim:"1152x2048", espace:"Flux / Résidentiel", desc:"Espace résidentiel et circulation."},
+  {id:"D", name:"Studio 217 – Star Academy", coords:[48.9192,2.3751], img:"IMG_7836.JPG", alt:0, emotion:5, dim:"1152x2048", espace:"Commercial / Média", desc:"Lieu commercial et artistique."},
+  {id:"E", name:"Jardin / espace vert", coords:[48.9172,2.3728], img:"IMG_7835.JPG", alt:0, emotion:1, dim:"1152x2048", espace:"Vert", desc:"Espace vert et détente."},
+  {id:"F", name:"Quartier ancien", coords:[48.9121,2.3821], img:"IMG_6981.jpg", alt:0, emotion:2, dim:"1536x2048", espace:"Flux / Résidentiel", desc:"Quartier historique et calme."},
+  {id:"G", name:"CIFA Fashion Business Center", coords:[48.9181,2.3733], img:"IMG_7834.JPG", alt:0, emotion:4, dim:"1152x2048", espace:"Commercial / Média", desc:"Centre commercial et bureaux."}
 ];
 
+// ================== Timeline ==================
 let currentStep=null;
 const timeline=document.getElementById("timeline");
 
-function renderTimeline(filter="all"){
+function renderTimeline(){
   timeline.innerHTML="";
   points.forEach(p=>{
-    if(filter!=="all" && p.espace!==filter) return;
     const step=document.createElement("div");
     step.className="step";
     step.dataset.id=p.id;
-    step.innerHTML=`
-      <strong>${p.time} – ${p.name}</strong>
-      <div class="photo"><img src="${p.img}" alt="${p.name}"></div>
-      <div class="tags">
-        <span class="tag">${p.espace}</span>
-        <span class="tag intensity">Intensité ${"█".repeat(p.emotion)}${"░".repeat(5-p.emotion)}</span>
-        <span class="tag">🚶 ${p.rythme}</span>
-      </div>
-      <div class="meta">📍 ${p.coords[0]}, ${p.coords[1]} · 📐 ${p.dim}</div>`;
+    step.innerHTML=`<strong>${p.name}</strong><img src="${p.img}" alt="${p.name}"><div class="tags"><span class="tag">${p.espace}</span><span class="tag intensity">Intensité ${"█".repeat(p.emotion)}${"░".repeat(5-p.emotion)}</span></div><div class="meta">${p.desc}</div>`;
     step.onclick=()=>focusStep(p.id);
     timeline.appendChild(step);
   });
@@ -228,51 +125,27 @@ function renderTimeline(filter="all"){
 
 function fadeInSteps(){
   const steps=document.querySelectorAll(".step");
-  steps.forEach((el,i)=>setTimeout(()=>el.classList.add("visible"), i*150));
+  steps.forEach((el,i)=>setTimeout(()=>el.classList.add("visible"),i*150));
 }
 
 function focusStep(id){
   if(currentStep) currentStep.classList.remove("active");
   const step=document.querySelector(`.step[data-id='${id}']`);
-  if(step){
-    step.classList.add("active");
-    step.scrollIntoView({behavior:"smooth",inline:"center"});
-    currentStep=step;
-  }
+  if(step){step.classList.add("active");step.scrollIntoView({behavior:"smooth",inline:"center"});currentStep=step;}
 }
-
-// ================== Légende ==================
-document.querySelectorAll(".legend span").forEach(el=>{
-  el.onclick=()=>{
-    document.querySelectorAll(".legend span").forEach(s=>s.classList.remove("active"));
-    el.classList.add("active");
-    renderTimeline(el.dataset.filter);
-  }
-});
 
 // ================== Carte Leaflet ==================
 const map = L.map("map").setView([48.914, 2.372], 14);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
-
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
 const latlngs=[];
 points.forEach(p=>{
   latlngs.push(p.coords);
-  const popupContent=`
-    <div style="display:flex;gap:10px;max-width:250px;font-size:14px;font-family:sans-serif;">
-      <img src="${p.img}" alt="${p.name}" style="width:100px;height:70px;object-fit:cover;border-radius:6px;border:1px solid #ddd;">
-      <div style="flex:1;">
-        <strong>${p.id}. ${p.name}</strong><br/>
-        <div style="margin:4px 0;color:#444;font-size:13px;">
-          📍 ${p.coords[0].toFixed(4)}, ${p.coords[1].toFixed(4)}<br/>
-          🚶 ${p.rythme} · 📐 ${p.dim} · ❤️ Intensité ${p.emotion}
-        </div>
-      </div>
-    </div>`;
-  const marker=L.marker(p.coords).addTo(map).bindPopup(popupContent);
+  const marker=L.marker(p.coords).addTo(map).bindPopup(`<strong>${p.name}</strong><br>${p.desc}`);
   marker.on('click',()=>focusStep(p.id));
 });
-const polyline=L.polyline(latlngs,{color:'#2563eb',weight:4,opacity:0.7}).addTo(map);
-map.fitBounds(polyline.getBounds());
+L.polyline(latlngs,{color:'#2563eb',weight:4,opacity:0.7}).addTo(map);
+
+renderTimeline();
 
 // ================== Graphiques ==================
 new Chart(document.getElementById('altitudeChart'),{
@@ -295,9 +168,6 @@ new Chart(document.getElementById('dimensionChart'),{
   ]},
   options:{responsive:true,plugins:{legend:{position:'top'}}}
 });
-
-// Initial render
-renderTimeline();
 </script>
 </body>
 </html>
